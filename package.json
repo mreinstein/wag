@@ -1,0 +1,24 @@
+{
+  "name": "wag",
+  "version": "0.0.0",
+  "description": "parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreinstein/wag.git"
+  },
+  "keywords": [
+    "\"optimization",
+    "graph",
+    "web",
+    "wag\""
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mreinstein/wag/issues"
+  }
+}
