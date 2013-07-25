@@ -568,3 +568,7 @@ AssetGraph = (function() {
   return AssetGraph;
 
 })();
+
+module.exports.AssetGraph = AssetGraph;
+
+module.exports.Asset = Asset;

@@ -445,3 +445,7 @@ class AssetGraph
 		# only add graph assets that are new and have type set
 		if !@nodes[asset.filepath] and asset.type?
 			@nodes[asset.filepath] = asset
+
+
+module.exports.AssetGraph = AssetGraph
+module.exports.Asset = Asset
