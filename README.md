@@ -1,6 +1,8 @@
 wag
 ===
 
+![Alt text](wag-thumb.jpeg "The best meat's in the rump…")
+
 Web AssetGraph Library
 
 ### ?

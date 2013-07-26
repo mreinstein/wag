@@ -222,7 +222,9 @@ class Asset
 		if @type is 'javascript'
 			#before = fs.readFileSync join(@root, @filepath), 'utf8'
 			@obj.figure_out_scope()
-			compressor = UglifyJS.Compressor()
+			# https://github.com/mishoo/UglifyJS2#compressor-options
+			# http://lisperator.net/uglifyjs/compress
+			compressor = UglifyJS.Compressor { unused: false}
 			@obj.transform compressor
 			minified = @obj.print_to_string { beautify: false }
 			#console.log '    before', before.length, 'after', minified.length
@@ -345,7 +347,6 @@ class Asset
 					# ignore exports for scriptpath.value and references to requireJS
 				else if requireJS
 					found = false
-					###
 					# see if the script corresponds to one in the RequireJS path list
 					for alias, pa of requireJS.paths
 						if alias is scriptpath.value
@@ -353,7 +354,6 @@ class Asset
 							newAssetPath = join p, "#{pa}.js"
 					if !found
 						console.log "error 1: could not find asset #{scriptpath.value}"
-					###
 				else
 					console.log "error: could not find asset #{scriptpath.value}"
 
@@ -392,7 +392,7 @@ class Asset
 				for d in @obj
 					updated += htmlparser.DomUtils.getOuterHTML(d)
 		else if @type is 'javascript'
-			updated = @obj.print_to_string({ beautify: true })
+			updated = @obj.print_to_string({ beautify: false })
 		else if @type is 'style'
 			updated = css.stringify(@obj, { compress: false })
 		else if @type is 'image'
@@ -423,7 +423,7 @@ class AssetGraph
 	loadAssets: (filepath) ->
 		# TODO: detect graph cycles to prevent infinite loop
 		absPath = join @root, filepath
-		if fs.statSync(absPath).isDirectory() 
+		if fs.statSync(absPath).isDirectory()
 			files = fs.readdirSync absPath
 			for f in files
 				@loadAssets join(filepath, f)
