@@ -11,6 +11,7 @@ The most obvious usage (to me) is building highly optimized website deploys by t
 
 This could become part of a grunt workflow, or you could build your own custom tools. It's up to you.
 
+This tool is inspired by assetgraph and assetgraph-builder.
 
 ### Features
 * partially supports RequireJS syntax
@@ -35,16 +36,18 @@ ag = new AssetGraph root
 ag.loadAssets 'index.html'
 ag.loadAssets 'js/'
 
-console.log "\nloaded #{Object.keys(ag.nodes).length} assets:"
+console.log "\nloaded #{Object.keys(ag.nodes).length} assets"
 
-ag.moveAssets 'static/'
- 
+
 ag.minifyAssets()
 
-ag.hashAssets()  # rename each file (except for index.html) to an md5 hash of it's contents
+ag.moveAssets 'static/'
 
 out = '/Users/mike/Desktop/deployfolder'
-ag.writeAssetsToDisc out
+
+# rename each file (except for index.html) to an md5 hash of it's contents
+useHashName = true 
+ag.writeAssetsToDisc out, useHashName
 ```
 
 

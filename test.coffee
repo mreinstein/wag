@@ -27,16 +27,10 @@ for k,v of ag.nodes
 for type,count of typecount
 	console.log '  ', type, ':', count
 
+ag.minifyAssets()
 
 ag.moveAssets 'static/'
 
-ag.minifyAssets()
-
-ag.hashAssets()
-
 out = '/Users/mikereinstein/Desktop/test'
-ag.writeAssetsToDisc out
-
-#shell.cp '-R', join(root,'components'), '/Users/mikereinstein/Desktop/test'
-
-###
+useHashName = true
+ag.writeAssetsToDisc out, useHashName

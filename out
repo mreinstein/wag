@@ -1,53 +1,59 @@
 loading  /css/font-awesome.css
 loading  /css/style.css
-loading  /img/main_logo.svg
-loading  /img/sign_up_hero_1.png
-loading  /img/man.svg
-loading  /img/compass.svg
 external script found /components/modernizr/modernizr.js
 loading  /components/modernizr/modernizr.js
 found requirejs entry point /components/requirejs/require.js main /js/app
 loading  /js/app.js
+loading  /img/main_logo.svg
+loading  /img/sign_up_hero_1.png
+loading  /img/share-tiles.png
+loading  /img/share-tiles.png
+loading  /img/man.svg
+loading  /img/compass.svg
 loading  /components/jquery/jquery.js
 loading  /components/backbone-amd/backbone.js
-loading  /components/underscore-amd/underscore.js
 loading  /components/webshim/polyfiller.js
 loading  /js/views/application.js
+loading  /js/models/analytics.js
+loading  /components/underscore-amd/underscore.js
 loading  /connect.facebook.net/en_US/all.js
-error:file /Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com/connect.facebook.net/en_US/all.js doesn't exist.
 loading  /js/views/partials/navbar.js
+loading  /js/views/partials/categorysubnavbar.js
+loading  /js/views/partials/modaladdtolist.js
+loading  /js/views/partials/emailconfirmationbanner.js
+loading  /js/models/user.js
+loading  /js/routers/router.js
+loading  /js/models/server.js
+error:file /Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com/connect.facebook.net/en_US/all.js doesn't exist.
 loading  /js/models/category.js
 loading  /js/routers/router.js
 loading  /js/views/partials/modalsigninup.js
+loading  /js/models/user.js
+loading  /templates/partials/navbar.html
 loading  /js/models/server.js
-loading  /components/cryptojs-sha1/enc-base64.js
-loading  /components/cryptojs-sha1/cryptojs-sha1.js
 loading  /js/models/user.js
 loading  /js/views/partials/modalfacebookcompletesignup.js
+loading  /templates/partials/modal-sign-in-up.html
+loading  /components/cryptojs-sha1/enc-base64.js
+loading  /components/cryptojs-sha1/cryptojs-sha1.js
 loading  /templates/partials/modal-fb-complete-sign-up.html
 warning: template directives found. Not parsing /templates/partials/modal-fb-complete-sign-up.html
-loading  /templates/partials/modal-sign-in-up.html
 warning: template directives found. Not parsing /templates/partials/modal-sign-in-up.html
-loading  /templates/partials/navbar.html
 warning: template directives found. Not parsing /templates/partials/navbar.html
-loading  /js/views/partials/categorysubnavbar.js
 loading  /templates/partials/categorysubnavbar.html
 warning: template directives found. Not parsing /templates/partials/categorysubnavbar.html
-loading  /js/views/partials/modaladdtolist.js
 loading  /templates/partials/modal-add-to-list.html
 warning: template directives found. Not parsing /templates/partials/modal-add-to-list.html
-loading  /js/views/partials/emailconfirmationbanner.js
 loading  /templates/partials/email-confirmation-banner.html
-loading  /js/models/analytics.js
 loading  /templates/about.html
 loading  /connect.facebook.net/en_US/all.js
 error:file /Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com/connect.facebook.net/en_US/all.js doesn't exist.
 loading  /templates/careers.html
 loading  /templates/partials/like-button.html
-warning: template directives found. Not parsing /templates/partials/like-button.html
 loading  /templates/partials/save-button.html
-warning: template directives found. Not parsing /templates/partials/save-button.html
 loading  /templates/category.html
+warning: template directives found. Not parsing /templates/partials/like-button.html
+warning: template directives found. Not parsing /templates/partials/save-button.html
 warning: template directives found. Not parsing /templates/category.html
 loading  /templates/contact.html
 loading  /components/async/async.js
@@ -63,22 +69,23 @@ loading  /templates/loading.html
 loading  /templates/mobilebarcodes.html
 loading  /templates/notifications.html
 loading  /templates/partials/productcarousel.html
-warning: template directives found. Not parsing /templates/partials/productcarousel.html
 loading  /templates/partials/productcarouselitem.html
+warning: template directives found. Not parsing /templates/partials/productcarousel.html
 warning: template directives found. Not parsing /templates/partials/productcarouselitem.html
 loading  /templates/password.html
 loading  /templates/product.html
-warning: template directives found. Not parsing /templates/product.html
 loading  /templates/partials/productsrelated.html
+loading  /components/moment/moment.min.js
+warning: template directives found. Not parsing /templates/product.html
 warning: template directives found. Not parsing /templates/partials/productsrelated.html
 loading  /templates/productbarcodes.html
 loading  /templates/partials/profile-likes.html
-warning: template directives found. Not parsing /templates/partials/profile-likes.html
 loading  /templates/partials/profile-followers.html
-warning: template directives found. Not parsing /templates/partials/profile-followers.html
 loading  /templates/partials/profile-following.html
-warning: template directives found. Not parsing /templates/partials/profile-following.html
 loading  /templates/profile.html
+warning: template directives found. Not parsing /templates/partials/profile-likes.html
+warning: template directives found. Not parsing /templates/partials/profile-followers.html
+warning: template directives found. Not parsing /templates/partials/profile-following.html
 warning: template directives found. Not parsing /templates/profile.html
 loading  /templates/profilesettings.html
 warning: template directives found. Not parsing /templates/profilesettings.html
@@ -88,12 +95,95 @@ loading  /templates/search.html
 warning: template directives found. Not parsing /templates/search.html
 loading  /templates/userlist.html
 warning: template directives found. Not parsing /templates/userlist.html
-loading  /components/moment/moment.min.js
 loading  /templates/userlists.html
 warning: template directives found. Not parsing /templates/userlists.html
 
-loaded 98 assets:
-   style : 2
-   image : 4
-   javascript : 57
+loaded 99 assets:
    html : 35
+   style : 2
+   image : 5
+   javascript : 57
+WEEEE /static/font-awesome.css
+WEEEE /static/main_logo.svg
+WEEEE /static/sign_up_hero_1.png
+WEEEE /static/share-tiles.png
+WEEEE /static/man.svg
+WEEEE /static/compass.svg
+WEEEE /static/style.css
+WEEEE /static/modernizr.js
+WEEEE /static/jquery.js
+WEEEE /static/underscore.js
+WEEEE /static/backbone.js
+WEEEE /static/polyfiller.js
+WEEEE /static/category.js
+WEEEE /static/router.js
+WEEEE /static/enc-base64.js
+WEEEE /static/cryptojs-sha1.js
+WEEEE /static/server.js
+WEEEE /static/user.js
+WEEEE /static/modal-fb-complete-sign-up.html
+WEEEE /static/modalfacebookcompletesignup.js
+WEEEE /static/modal-sign-in-up.html
+WEEEE /static/modalsigninup.js
+WEEEE /static/navbar.html
+WEEEE /static/navbar.js
+WEEEE /static/categorysubnavbar.html
+WEEEE /static/categorysubnavbar.js
+WEEEE /static/modal-add-to-list.html
+WEEEE /static/modaladdtolist.js
+WEEEE /static/email-confirmation-banner.html
+WEEEE /static/emailconfirmationbanner.js
+WEEEE /static/application.js
+WEEEE /static/analytics.js
+WEEEE /static/app.js
+WEEEE index.html
+WEEEE /static/home.js
+WEEEE /static/about.html
+WEEEE /static/about.js
+WEEEE /static/careers.html
+WEEEE /static/careers.js
+WEEEE /static/like-button.html
+WEEEE /static/save-button.html
+WEEEE /static/category.html
+WEEEE /static/contact.html
+WEEEE /static/contact.js
+WEEEE /static/async.js
+WEEEE /static/feedcompare.html
+WEEEE /static/feedcompare.js
+WEEEE /static/feeds.html
+WEEEE /static/feeds.js
+WEEEE /static/home.html
+WEEEE /static/invite.html
+WEEEE /static/invite.js
+WEEEE /static/loading.html
+WEEEE /static/loading.js
+WEEEE /static/mobilebarcodes.html
+WEEEE /static/mobilebarcodes.js
+WEEEE /static/notifications.html
+WEEEE /static/notifications.js
+WEEEE /static/productcarousel.html
+WEEEE /static/productcarouselitem.html
+WEEEE /static/productcarousel.js
+WEEEE /static/password.html
+WEEEE /static/password.js
+WEEEE /static/product.html
+WEEEE /static/productsrelated.html
+WEEEE /static/moment.min.js
+WEEEE /static/product.js
+WEEEE /static/productbarcodes.html
+WEEEE /static/productbarcodes.js
+WEEEE /static/profile-likes.html
+WEEEE /static/profile-followers.html
+WEEEE /static/profile-following.html
+WEEEE /static/profile.html
+WEEEE /static/profile.js
+WEEEE /static/profilesettings.html
+WEEEE /static/profilesettings.js
+WEEEE /static/recentlyviewed.html
+WEEEE /static/recentlyviewed.js
+WEEEE /static/search.html
+WEEEE /static/search.js
+WEEEE /static/userlist.html
+WEEEE /static/userlist.js
+WEEEE /static/userlists.html
+WEEEE /static/userlists.js

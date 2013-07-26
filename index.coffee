@@ -63,88 +63,15 @@ updateHtmlUnderscoreTemplate = (node, deltas, dynamic) ->
 requireJS = null
 
 class Asset
-	constructor: (@root, @filepath, @ag=null) ->	
+
+	constructor: (@root, @filepath, @ag=null) ->
 		absPath = join @root, @filepath
 		@type     = @_determineType absPath
 		@to       = []  # Assets this references 
 		@from     = []  # Assets referencing this
-		@minified = null
-		@hash     = null
+		@minify   = false
 		@pending  = [] # unresolved references to other nodes
 		@obj      = @_buildObject @filepath, @type
-
-	hashValue: ->
-		if @hash then return
-
-		# determine if any of the dependencies aren't named by hash
-		for node in @to
-			if !node.asset.hash then node.asset.hashValue()
-
-		md5sum = crypto.createHash 'md5'
-
-		if @type is 'javascript'
-			md5sum.update @obj.print_to_string({ beautify: false })
-			@hash = md5sum.digest 'hex'
-		else if @type is 'style'
-			if @minified
-				md5sum.update @minified
-			else
-				md5sum.update css.stringify(@obj)
-			@hash = md5sum.digest 'hex'
-		else if @type is 'html'
-			#
-			# TODO remove after html templates are supported
-			if typeof(@obj) is 'string'
-				md5sum.update @obj
-				@hash = md5sum.digest 'hex'
-			else
-				#
-				for d in @obj
-					md5sum.update htmlparser.DomUtils.getOuterHTML(d)
-				@hash = md5sum.digest 'hex'
-		else if @type is 'image'
-			md5sum.update @obj
-			@hash = md5sum.digest 'hex'
-
-		newPath = path.dirname(@filepath) + '/' + @hash + path.extname(@filepath)
-		@move newPath
-
-
-	minify: ->
-		if @minified then return
-
-		# determine if any of the dependencies aren't minified
-		for node in @to
-			if !node.asset.minified then node.asset.minify()
-
-		console.log 'minifying', @filepath
-
-		if @type is 'javascript'
-			#before = fs.readFileSync join(@root, @filepath), 'utf8'
-			@obj.figure_out_scope()
-			compressor = UglifyJS.Compressor()
-			@obj.transform compressor
-			@minified = @obj.print_to_string { beautify: false }
-			#console.log '    before', before.length, 'after', @minified.length
-		else if @type is 'style'
-			#before = fs.readFileSync join(@root, @filepath), 'utf8'
-			@minified = css.stringify @obj, { compress: true }
-			#console.log '    before', before.length, 'after', ast.length
-		else if @type is 'html'
-			#
-			# TODO remove after html templates are supported
-			if typeof(@obj) is 'string'
-				@minified = @obj
-				return
-			#
-			@minified = ''
-			for d in @obj
-				@minified += htmlparser.DomUtils.getOuterHTML(d)
-		else if @type is 'image'
-			@minfied = @obj
-			# TODO interesting image modules: jpegtran, optipng, pngcrush, 
-			# pngquant, assetgraph-sprite, histogram
-
 
 	move: (destination) ->
 		oldpath = JSON.parse(JSON.stringify(@filepath))
@@ -164,7 +91,11 @@ class Asset
 						f.node.value = "text!#{destination}"
 					else
 						# omit the file extension for javascript references in RequireJS blocks
-						f.node.value = join(path.dirname(destination), path.basename(destination, ext))
+						d = join path.dirname(destination), path.basename(destination, ext)
+						# omit the leading slash for javascript references in RequireJS blocks
+						if d.indexOf('/') is 0
+							d = d.substring 1
+						f.node.value = d
 			else if f.asset.type is 'html'
 				# the asset that requires this one is an html document
 				if (@type is 'javascript') and f.inRequireJS
@@ -175,8 +106,6 @@ class Asset
 					f.node.attribs.src = destination
 			else if f.asset.type is 'image'
 				if @type is 'style'
-					#url = Asset.parseStyleSheetUrl(f.node.value)
-					#newUrl = join('/', destination, path.basename(url))
 					# TODO: this needs to be smarter so it doesn't clobber other values (e.g., no-repeat, etc)
 					f.node.value = "url(#{destination})"
 			else
@@ -187,64 +116,6 @@ class Asset
 		if @ag
 			@ag.addAsset this
 			delete @ag.nodes[oldpath]
-
-	writeToDisc: (destination) ->
-		if @minified
-			fs.writeFileSync join(destination, @filepath), @minified 
-		else if @type is 'html'
-			#
-			# TODO remove after html templates are supported
-			if typeof(@obj) is 'string'
-				fs.writeFileSync join(destination, @filepath), @obj
-				return
-			#
-			out = ''
-			for d in @obj
-				out += htmlparser.DomUtils.getOuterHTML(d)
-			fs.writeFileSync join(destination, @filepath), out
-		else if @type is 'javascript'
-			fs.writeFileSync join(destination, @filepath), @obj.print_to_string({ beautify: true })
-		else if @type is 'style'
-			fs.writeFileSync join(destination, @filepath), css.stringify(@obj, { compress: false })
-		else
-			fs.writeFileSync join(destination, @filepath), @obj
-
-	_buildObject: ->
-		filepath = @filepath
-		type = @type
-		absPath = join @root, filepath
-		if !fs.existsSync absPath
-			console.log "error:file #{absPath} doesn't exist."
-			return null
-
-		file = fs.readFileSync absPath, 'utf8'
-		if type is 'html'
-			#
-			# TODO remove after html templates are supported
-			if file.indexOf('<%') >= 0
-				console.log 'warning: template directives found. Not parsing', filepath
-				return file
-			#
-			d = null
-			handler = new htmlparser.DomHandler (er, dom) =>
-				if er
-					throw new Error(er)
-				else
-					# parsing done, analyze the DOM
-					for d in dom
-						@_parseDOMNode d
-				d = dom
-
-			parser = new htmlparser.Parser handler
-			parser.parseComplete file
-			return d
-		else if type is 'style'
-			return @_parseStyleSheet filepath, file
-		else if type is 'javascript'
-			return @_parseJavascript filepath, file
-		else if type is 'image'
-			return fs.readFileSync(absPath, 'utf8')
-		null
 
 	resolveDependencies: ->
 		for p in @pending
@@ -257,6 +128,61 @@ class Asset
 				asset.resolveDependencies()
 		@pending = []
 
+	writeToDisc: (destination, useHashName) ->
+		if useHashName
+			for t in @to
+				if !t.asset.written
+					t.asset.writeToDisc destination, useHashName
+
+			# don't rename the index file
+			if @filepath isnt 'index.html'
+				# calculate this asset's hash because children's references have changed
+				hash = @_hash()
+				# update all assets that reference this one
+				newPath = path.dirname(@filepath) + '/' + hash + path.extname(@filepath)
+				@move newPath
+
+		# write this element out
+		out = @_toString()
+		if out then fs.writeFileSync join(destination, @filepath), out
+		@written = true # mark this asset as written to disc
+
+	_buildObject: ->
+		result = null
+		filepath = @filepath
+		type = @type
+		absPath = join @root, filepath
+		if !fs.existsSync absPath
+			console.log "error:file #{absPath} doesn't exist."
+		else
+			file = fs.readFileSync absPath, 'utf8'
+			if type is 'html'
+				#
+				# TODO remove after html templates are supported
+				if file.indexOf('<%') >= 0
+					console.log 'warning: template directives found. Not parsing', filepath
+					return file
+				#
+				d = null
+				handler = new htmlparser.DomHandler (er, dom) =>
+					if er
+						throw new Error(er)
+					else
+						# parsing done, analyze the DOM
+						for d in dom
+							@_parseDOMNode d
+					d = dom
+
+				parser = new htmlparser.Parser handler
+				parser.parseComplete file
+				result = d
+			else if type is 'style'
+				result = @_parseStyleSheet filepath, file
+			else if type is 'javascript'
+				result = @_parseJavascript filepath, file
+			else if type is 'image'
+				result = fs.readFileSync(absPath, 'utf8')
+		result
 
 	_determineType: (filepath) ->
 		ext = path.extname(filepath or '').split '.'
@@ -283,6 +209,41 @@ class Asset
 			node        : node
 			inRequireJS : inRequireJS
 		}
+
+	# calculate the md5 hash of this asset's contents
+	_hash: ->
+		out = @_toString()
+		md5sum = crypto.createHash 'md5'
+		md5sum.update out
+		md5sum.digest 'hex'
+
+	_minify: ->
+		minified = ''
+		if @type is 'javascript'
+			#before = fs.readFileSync join(@root, @filepath), 'utf8'
+			@obj.figure_out_scope()
+			compressor = UglifyJS.Compressor()
+			@obj.transform compressor
+			minified = @obj.print_to_string { beautify: true }
+			#console.log '    before', before.length, 'after', minified.length
+		else if @type is 'style'
+			#before = fs.readFileSync join(@root, @filepath), 'utf8'
+			minified = css.stringify @obj, { compress: true }
+			#console.log '    before', before.length, 'after', ast.length
+		else if @type is 'html'
+			#
+			# TODO remove after html templates are supported
+			if typeof(@obj) is 'string'
+				minified = @obj
+			else
+				#
+				for d in @obj
+					minified += htmlparser.DomUtils.getOuterHTML(d)
+		else if @type is 'image'
+			minified = @obj
+			# TODO interesting image modules: jpegtran, optipng, pngcrush, 
+			# pngquant, assetgraph-sprite, histogram
+		minified
 
 	# recursively parse a DOM node's structure
 	_parseDOMNode: (node) ->
@@ -414,6 +375,29 @@ class Asset
 							@_foundAssetReference fullpath, dec
 		c
 
+	_toString: ->
+		if @minify then return @_minify()
+
+		if @type is 'html'
+			#
+			# TODO remove after html templates are supported
+			if typeof(@obj) is 'string'
+				updated = @obj
+			else
+				#
+				updated = ''
+				for d in @obj
+					updated += htmlparser.DomUtils.getOuterHTML(d)
+		else if @type is 'javascript'
+			updated = @obj.print_to_string({ beautify: true })
+		else if @type is 'style'
+			updated = css.stringify(@obj, { compress: false })
+		else if @type is 'image'
+			updated = @obj
+		else
+			updated = ''
+		updated
+
 	@parseStyleSheetUrl: (declaration) ->
 		b = declaration.match /url\((.+?)\)/gi
 		if b
@@ -434,6 +418,7 @@ class AssetGraph
 		# TODO
 
 	loadAssets: (filepath) ->
+		# TODO: detect graph cycles to prevent infinite loop
 		absPath = join @root, filepath
 		if fs.statSync(absPath).isDirectory() 
 			files = fs.readdirSync absPath
@@ -443,12 +428,8 @@ class AssetGraph
 			@_load filepath
 
 	minifyAssets: ->
-		# TODO: detect graph cycles to prevent infinite loop
 		for p, a of @nodes
-			a.minified = false
-
-		for p, a of @nodes
-			a.minify()
+			a.minify = true
 
 	moveAssets: (destination) ->
 		for p,a of @nodes
@@ -456,17 +437,13 @@ class AssetGraph
 				newpath = join '/', destination, '/', path.basename(p)
 				a.move newpath
 
-	hashAssets: ->
+	writeAssetsToDisc: (destination, useHashName=false) ->
+		# mark all of the assets as unwritten
 		for p, a of @nodes
-			a.hash = null
+			a.written = false
 
 		for p, a of @nodes
-			if p isnt 'index.html'
-				a.hashValue()
-
-	writeAssetsToDisc: (destination) ->
-		for p, a of @nodes
-			a.writeToDisc destination
+			a.writeToDisc destination, useHashName
 
 	_load: (filepath) ->
 		absPath = join @root, filepath

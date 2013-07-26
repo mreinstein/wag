@@ -64,95 +64,13 @@ Asset = (function() {
     this.type = this._determineType(absPath);
     this.to = [];
     this.from = [];
-    this.minified = null;
-    this.hash = null;
+    this.minify = false;
+    this.pending = [];
     this.obj = this._buildObject(this.filepath, this.type);
   }
 
-  Asset.prototype.hashValue = function() {
-    var d, md5sum, newPath, node, _i, _j, _len, _len1, _ref, _ref1;
-    if (this.hash) {
-      return;
-    }
-    _ref = this.to;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      node = _ref[_i];
-      if (!node.asset.hash) {
-        node.asset.hashValue();
-      }
-    }
-    md5sum = crypto.createHash('md5');
-    if (this.type === 'javascript') {
-      md5sum.update(this.obj.print_to_string({
-        beautify: false
-      }));
-      this.hash = md5sum.digest('hex');
-    } else if (this.type === 'style') {
-      if (this.minified) {
-        md5sum.update(this.minified);
-      } else {
-        md5sum.update(css.stringify(this.obj));
-      }
-      this.hash = md5sum.digest('hex');
-    } else if (this.type === 'html') {
-      _ref1 = this.obj;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        d = _ref1[_j];
-        md5sum.update(htmlparser.DomUtils.getOuterHTML(d));
-      }
-      this.hash = md5sum.digest('hex');
-    } else if (this.type === 'image') {
-      md5sum.update(this.obj);
-      this.hash = md5sum.digest('hex');
-    }
-    newPath = path.dirname(this.filepath) + '/' + this.hash + path.extname(this.filepath);
-    return this.move(newPath);
-  };
-
-  Asset.prototype.minify = function() {
-    var compressor, d, node, _i, _j, _len, _len1, _ref, _ref1, _results;
-    if (this.minified) {
-      return;
-    }
-    _ref = this.to;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      node = _ref[_i];
-      if (!node.asset.minified) {
-        node.asset.minify();
-      }
-    }
-    console.log('minifying', this.filepath);
-    if (this.type === 'javascript') {
-      this.obj.figure_out_scope();
-      compressor = UglifyJS.Compressor();
-      this.obj.transform(compressor);
-      return this.minified = this.obj.print_to_string({
-        beautify: false
-      });
-    } else if (this.type === 'style') {
-      return this.minified = css.stringify(this.obj, {
-        compress: true
-      });
-    } else if (this.type === 'html') {
-      if (typeof this.obj === 'string') {
-        this.minified = this.obj;
-        return;
-      }
-      this.minified = '';
-      _ref1 = this.obj;
-      _results = [];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        d = _ref1[_j];
-        _results.push(this.minified += htmlparser.DomUtils.getOuterHTML(d));
-      }
-      return _results;
-    } else if (this.type === 'image') {
-      return this.minfied = this.obj;
-    }
-  };
-
   Asset.prototype.move = function(destination) {
-    var ext, f, oldpath, _i, _len, _ref;
+    var d, ext, f, oldpath, _i, _len, _ref;
     oldpath = JSON.parse(JSON.stringify(this.filepath));
     ext = path.extname(destination);
     _ref = this.from;
@@ -165,11 +83,21 @@ Asset = (function() {
           if (f.node.value.indexOf('text!') >= 0) {
             f.node.value = "text!" + destination;
           } else {
-            f.node.value = join(path.dirname(destination), path.basename(destination, ext));
+            d = join(path.dirname(destination), path.basename(destination, ext));
+            if (d.indexOf('/') === 0) {
+              d = d.substring(1);
+            }
+            f.node.value = d;
           }
         }
       } else if (f.asset.type === 'html') {
-        f.node.value = 'text!' + destination;
+        if ((this.type === 'javascript') && f.inRequireJS) {
+          f.node.attribs['data-main'] = join(path.dirname(destination), path.basename(destination, '.js'));
+        } else if (this.type === 'style') {
+          f.node.attribs.href = destination;
+        } else {
+          f.node.attribs.src = destination;
+        }
       } else if (f.asset.type === 'image') {
         if (this.type === 'style') {
           f.node.value = "url(" + destination + ")";
@@ -185,73 +113,94 @@ Asset = (function() {
     }
   };
 
-  Asset.prototype.writeToDisc = function(destination) {
-    var d, out, _i, _len, _ref;
-    if (this.minified) {
-      return fs.writeFileSync(join(destination, this.filepath), this.minified);
-    } else if (this.type === 'html') {
-      if (typeof this.obj === 'string') {
-        fs.writeFileSync(join(destination, this.filepath), this.obj);
-        return;
+  Asset.prototype.resolveDependencies = function() {
+    var asset, p, _i, _len, _ref;
+    _ref = this.pending;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      p = _ref[_i];
+      asset = this.ag.nodes[p.filepath] || new Asset(this.root, p.filepath, this.ag);
+      if (asset.obj) {
+        asset.from.push({
+          asset: this,
+          node: p.node,
+          inRequireJS: p.inRequireJS
+        });
+        this.to.push({
+          asset: asset,
+          node: p.node,
+          inRequireJS: p.inRequireJS
+        });
+        this.ag.addAsset(asset);
+        asset.resolveDependencies();
       }
-      out = '';
-      _ref = this.obj;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        d = _ref[_i];
-        out += htmlparser.DomUtils.getOuterHTML(d);
-      }
-      return fs.writeFileSync(join(destination, this.filepath), out);
-    } else if (this.type === 'javascript') {
-      return fs.writeFileSync(join(destination, this.filepath), this.obj.print_to_string({
-        beautify: true
-      }));
-    } else if (this.type === 'style') {
-      return fs.writeFileSync(join(destination, this.filepath), css.stringify(this.obj, {
-        compress: false
-      }));
-    } else {
-      return fs.writeFileSync(join(destination, this.filepath), this.obj);
     }
+    return this.pending = [];
   };
 
-  Asset.prototype._buildObject = function(filepath, type) {
-    var absPath, d, file, handler, parser,
+  Asset.prototype.writeToDisc = function(destination, useHashName) {
+    var hash, newPath, out, t, _i, _len, _ref;
+    if (useHashName) {
+      _ref = this.to;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        t = _ref[_i];
+        if (!t.asset.written) {
+          t.asset.writeToDisc(destination, useHashName);
+        }
+      }
+      if (this.filepath !== 'index.html') {
+        hash = this._hash();
+        newPath = path.dirname(this.filepath) + '/' + hash + path.extname(this.filepath);
+        this.move(newPath);
+      }
+    }
+    out = this._toString();
+    if (out) {
+      fs.writeFileSync(join(destination, this.filepath), out);
+    }
+    return this.written = true;
+  };
+
+  Asset.prototype._buildObject = function() {
+    var absPath, d, file, filepath, handler, parser, result, type,
       _this = this;
+    result = null;
+    filepath = this.filepath;
+    type = this.type;
     absPath = join(this.root, filepath);
     if (!fs.existsSync(absPath)) {
       console.log("error:file " + absPath + " doesn't exist.");
-      return null;
-    }
-    file = fs.readFileSync(absPath, 'utf8');
-    if (type === 'html') {
-      if (file.indexOf('<%') >= 0) {
-        console.log('warnin: template directives found. Not parsing', filepath, file.length);
-        return file;
-      }
-      d = null;
-      handler = new htmlparser.DomHandler(function(er, dom) {
-        var _i, _len;
-        if (er) {
-          throw new Error(er);
-        } else {
-          for (_i = 0, _len = dom.length; _i < _len; _i++) {
-            d = dom[_i];
-            _this._parseDOMNode(d);
-          }
+    } else {
+      file = fs.readFileSync(absPath, 'utf8');
+      if (type === 'html') {
+        if (file.indexOf('<%') >= 0) {
+          console.log('warning: template directives found. Not parsing', filepath);
+          return file;
         }
-        return d = dom;
-      });
-      parser = new htmlparser.Parser(handler);
-      parser.parseComplete(file);
-      return d;
-    } else if (type === 'style') {
-      return this._parseStyleSheet(filepath, file);
-    } else if (type === 'javascript') {
-      return this._parseJavascript(filepath, file);
-    } else if (type === 'image') {
-      return fs.readFileSync(absPath, 'utf8');
+        d = null;
+        handler = new htmlparser.DomHandler(function(er, dom) {
+          var _i, _len;
+          if (er) {
+            throw new Error(er);
+          } else {
+            for (_i = 0, _len = dom.length; _i < _len; _i++) {
+              d = dom[_i];
+              _this._parseDOMNode(d);
+            }
+          }
+          return d = dom;
+        });
+        parser = new htmlparser.Parser(handler);
+        parser.parseComplete(file);
+        result = d;
+      } else if (type === 'style') {
+        result = this._parseStyleSheet(filepath, file);
+      } else if (type === 'javascript') {
+        result = this._parseJavascript(filepath, file);
+      } else if (type === 'image') {
+        result = fs.readFileSync(absPath, 'utf8');
+      }
     }
-    return null;
+    return result;
   };
 
   Asset.prototype._determineType = function(filepath) {
@@ -271,7 +220,6 @@ Asset = (function() {
   };
 
   Asset.prototype._foundAssetReference = function(filepath, node, inRequireJS) {
-    var asset;
     if (inRequireJS == null) {
       inRequireJS = false;
     }
@@ -281,25 +229,55 @@ Asset = (function() {
     if (!this.ag.nodes[filepath]) {
       console.log('loading ', filepath);
     }
-    asset = this.ag.nodes[filepath] || new Asset(this.root, filepath, this.ag);
-    if (asset.obj) {
-      asset.from.push({
-        asset: this,
-        node: node,
-        inRequireJS: inRequireJS
+    return this.pending.push({
+      filepath: filepath,
+      node: node,
+      inRequireJS: inRequireJS
+    });
+  };
+
+  Asset.prototype._hash = function() {
+    var md5sum, out;
+    out = this._toString();
+    md5sum = crypto.createHash('md5');
+    md5sum.update(out);
+    return md5sum.digest('hex');
+  };
+
+  Asset.prototype._minify = function() {
+    var compressor, d, minified, _i, _len, _ref;
+    minified = '';
+    if (this.type === 'javascript') {
+      this.obj.figure_out_scope();
+      compressor = UglifyJS.Compressor();
+      this.obj.transform(compressor);
+      minified = this.obj.print_to_string({
+        beautify: true
       });
-      this.to.push({
-        asset: asset,
-        node: node,
-        inRequireJS: inRequireJS
+    } else if (this.type === 'style') {
+      minified = css.stringify(this.obj, {
+        compress: true
       });
-      return this.ag.addAsset(asset);
+    } else if (this.type === 'html') {
+      if (typeof this.obj === 'string') {
+        minified = this.obj;
+      } else {
+        _ref = this.obj;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          d = _ref[_i];
+          minified += htmlparser.DomUtils.getOuterHTML(d);
+        }
+      }
+    } else if (this.type === 'image') {
+      minified = this.obj;
     }
+    return minified;
   };
 
   Asset.prototype._parseDOMNode = function(node) {
-    var n, newAssetPath, _i, _len, _ref, _results;
+    var inRequireJS, n, newAssetPath, _i, _len, _ref, _results;
     newAssetPath = null;
+    inRequireJS = false;
     if (node.type === 'tag' && (node.name === 'style' || node.name === 'link')) {
       newAssetPath = node.attribs.href;
     } else if (node.type === 'script' && node.name === 'script') {
@@ -309,6 +287,7 @@ Asset = (function() {
         if (node.attribs['data-main']) {
           console.log('found requirejs entry point', node.attribs.src, 'main', node.attribs['data-main']);
           newAssetPath = "" + node.attribs['data-main'] + ".js";
+          inRequireJS = true;
         } else {
           console.log('external script found', node.attribs.src);
           newAssetPath = node.attribs.src;
@@ -319,7 +298,7 @@ Asset = (function() {
       newAssetPath = node.attribs.src;
     }
     if (newAssetPath) {
-      this._foundAssetReference(newAssetPath, node);
+      this._foundAssetReference(newAssetPath, node, inRequireJS);
     }
     if (node.children) {
       _ref = node.children;
@@ -456,6 +435,38 @@ Asset = (function() {
     return c;
   };
 
+  Asset.prototype._toString = function() {
+    var d, updated, _i, _len, _ref;
+    if (this.minify) {
+      return this._minify();
+    }
+    if (this.type === 'html') {
+      if (typeof this.obj === 'string') {
+        updated = this.obj;
+      } else {
+        updated = '';
+        _ref = this.obj;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          d = _ref[_i];
+          updated += htmlparser.DomUtils.getOuterHTML(d);
+        }
+      }
+    } else if (this.type === 'javascript') {
+      updated = this.obj.print_to_string({
+        beautify: true
+      });
+    } else if (this.type === 'style') {
+      updated = css.stringify(this.obj, {
+        compress: false
+      });
+    } else if (this.type === 'image') {
+      updated = this.obj;
+    } else {
+      updated = '';
+    }
+    return updated;
+  };
+
   Asset.parseStyleSheetUrl = function(declaration) {
     var b, pos, pos2;
     b = declaration.match(/url\((.+?)\)/gi);
@@ -499,17 +510,12 @@ AssetGraph = (function() {
   };
 
   AssetGraph.prototype.minifyAssets = function() {
-    var a, p, _ref, _ref1, _results;
+    var a, p, _ref, _results;
     _ref = this.nodes;
+    _results = [];
     for (p in _ref) {
       a = _ref[p];
-      a.minified = false;
-    }
-    _ref1 = this.nodes;
-    _results = [];
-    for (p in _ref1) {
-      a = _ref1[p];
-      _results.push(a.minify());
+      _results.push(a.minify = true);
     }
     return _results;
   };
@@ -520,29 +526,9 @@ AssetGraph = (function() {
     _results = [];
     for (p in _ref) {
       a = _ref[p];
-      if (p === 'index.html') {
-        _results.push(newpath = p);
-      } else {
+      if (p !== 'index.html') {
         newpath = join('/', destination, '/', path.basename(p));
         _results.push(a.move(newpath));
-      }
-    }
-    return _results;
-  };
-
-  AssetGraph.prototype.hashAssets = function() {
-    var a, p, _ref, _ref1, _results;
-    _ref = this.nodes;
-    for (p in _ref) {
-      a = _ref[p];
-      a.hash = null;
-    }
-    _ref1 = this.nodes;
-    _results = [];
-    for (p in _ref1) {
-      a = _ref1[p];
-      if (p !== 'index.html') {
-        _results.push(a.hashValue());
       } else {
         _results.push(void 0);
       }
@@ -550,13 +536,21 @@ AssetGraph = (function() {
     return _results;
   };
 
-  AssetGraph.prototype.writeAssetsToDisc = function(destination) {
-    var a, p, _ref, _results;
+  AssetGraph.prototype.writeAssetsToDisc = function(destination, useHashName) {
+    var a, p, _ref, _ref1, _results;
+    if (useHashName == null) {
+      useHashName = false;
+    }
     _ref = this.nodes;
-    _results = [];
     for (p in _ref) {
       a = _ref[p];
-      _results.push(a.writeToDisc(destination));
+      a.written = false;
+    }
+    _ref1 = this.nodes;
+    _results = [];
+    for (p in _ref1) {
+      a = _ref1[p];
+      _results.push(a.writeToDisc(destination, useHashName));
     }
     return _results;
   };
@@ -570,7 +564,8 @@ AssetGraph = (function() {
     }
     a = new Asset(this.root, filepath, this);
     this.indexNode || (this.indexNode = a);
-    return this.addAsset(a);
+    this.addAsset(a);
+    return a.resolveDependencies();
   };
 
   AssetGraph.prototype.addAsset = function(asset) {
