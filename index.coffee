@@ -70,8 +70,8 @@ class Asset
 		@from     = []  # Assets referencing this
 		@minified = null
 		@hash     = null
+		@pending  = [] # unresolved references to other nodes
 		@obj      = @_buildObject @filepath, @type
-
 
 	hashValue: ->
 		if @hash then return
@@ -98,6 +98,7 @@ class Asset
 				md5sum.update @obj
 				@hash = md5sum.digest 'hex'
 			else
+				#
 				for d in @obj
 					md5sum.update htmlparser.DomUtils.getOuterHTML(d)
 				@hash = md5sum.digest 'hex'
@@ -165,7 +166,13 @@ class Asset
 						# omit the file extension for javascript references in RequireJS blocks
 						f.node.value = join(path.dirname(destination), path.basename(destination, ext))
 			else if f.asset.type is 'html'
-				f.node.value = 'text!' + destination
+				# the asset that requires this one is an html document
+				if (@type is 'javascript') and f.inRequireJS
+					f.node.attribs['data-main'] = join path.dirname(destination), path.basename(destination, '.js')
+				else if @type is 'style'
+					f.node.attribs.href = destination
+				else
+					f.node.attribs.src = destination
 			else if f.asset.type is 'image'
 				if @type is 'style'
 					#url = Asset.parseStyleSheetUrl(f.node.value)
@@ -202,7 +209,9 @@ class Asset
 		else
 			fs.writeFileSync join(destination, @filepath), @obj
 
-	_buildObject: (filepath, type) ->
+	_buildObject: ->
+		filepath = @filepath
+		type = @type
 		absPath = join @root, filepath
 		if !fs.existsSync absPath
 			console.log "error:file #{absPath} doesn't exist."
@@ -237,6 +246,18 @@ class Asset
 			return fs.readFileSync(absPath, 'utf8')
 		null
 
+	resolveDependencies: ->
+		for p in @pending
+			asset = @ag.nodes[p.filepath] or new Asset(@root, p.filepath, @ag)
+			# only add the asset if it's object could be created (javascript ast, html dom, css style, etc)
+			if asset.obj
+				asset.from.push { asset: this, node: p.node, inRequireJS: p.inRequireJS }
+				@to.push { asset: asset, node: p.node, inRequireJS: p.inRequireJS }
+				@ag.addAsset asset
+				asset.resolveDependencies()
+		@pending = []
+
+
 	_determineType: (filepath) ->
 		ext = path.extname(filepath or '').split '.'
 		ext = ext[ext.length - 1]
@@ -257,12 +278,11 @@ class Asset
 		if !@ag.nodes[filepath]
 			console.log 'loading ', filepath
 
-		asset = @ag.nodes[filepath] or new Asset(@root, filepath, @ag)
-		# only add the asset if it's object could be created (javascript ast, html dom, css style, etc)
-		if asset.obj
-			asset.from.push { asset: this, node: node, inRequireJS: inRequireJS }
-			@to.push { asset: asset, node: node, inRequireJS: inRequireJS }
-			@ag.addAsset asset
+		@pending.push {
+			filepath    : filepath
+			node        : node
+			inRequireJS : inRequireJS
+		}
 
 	# recursively parse a DOM node's structure
 	_parseDOMNode: (node) ->
@@ -274,6 +294,7 @@ class Asset
 		#   type: tag    name: img
 
 		newAssetPath = null
+		inRequireJS = false
 
 		if node.type is 'tag' and (node.name is 'style' or node.name is 'link')
 			newAssetPath = node.attribs.href
@@ -286,6 +307,7 @@ class Asset
 					console.log 'found requirejs entry point', node.attribs.src, 'main', node.attribs['data-main']
 					# found a requireJS config and we're trying to locate it, so parse it
 					newAssetPath = "#{node.attribs['data-main']}.js"
+					inRequireJS = true
 				else
 					console.log 'external script found', node.attribs.src
 					newAssetPath = node.attribs.src
@@ -293,7 +315,7 @@ class Asset
 			console.log "found image reference '#{node.attribs.src}'"
 			newAssetPath = node.attribs.src
 
-		if newAssetPath then @_foundAssetReference(newAssetPath, node)
+		if newAssetPath then @_foundAssetReference(newAssetPath, node, inRequireJS)
 
 		# if this DOM node has any children, parse them for asset references
 		if node.children
@@ -362,7 +384,6 @@ class Asset
 					# ignore exports for scriptpath.value and references to requireJS
 				else if requireJS
 					found = false
-					#console.log 'hmmp', scriptpath
 					for alias, pa of requireJS.paths
 						if alias is scriptpath.value
 							found = true
@@ -431,9 +452,7 @@ class AssetGraph
 
 	moveAssets: (destination) ->
 		for p,a of @nodes
-			if p is 'index.html'
-				newpath = p
-			else
+			if p isnt 'index.html'
 				newpath = join '/', destination, '/', path.basename(p)
 				a.move newpath
 
@@ -460,10 +479,12 @@ class AssetGraph
 		# the first loaded asset is considered the index node
 		@indexNode or= a
 		@addAsset a
+		a.resolveDependencies()
 
 	addAsset: (asset) ->
 		# only add graph assets that are new and have type set
 		if !@nodes[asset.filepath] and asset.type?
+			#console.log 'adding!', asset.filepath
 			@nodes[asset.filepath] = asset
 
 

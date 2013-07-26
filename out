@@ -1,0 +1,99 @@
+loading  /css/font-awesome.css
+loading  /css/style.css
+loading  /img/main_logo.svg
+loading  /img/sign_up_hero_1.png
+loading  /img/man.svg
+loading  /img/compass.svg
+external script found /components/modernizr/modernizr.js
+loading  /components/modernizr/modernizr.js
+found requirejs entry point /components/requirejs/require.js main /js/app
+loading  /js/app.js
+loading  /components/jquery/jquery.js
+loading  /components/backbone-amd/backbone.js
+loading  /components/underscore-amd/underscore.js
+loading  /components/webshim/polyfiller.js
+loading  /js/views/application.js
+loading  /connect.facebook.net/en_US/all.js
+error:file /Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com/connect.facebook.net/en_US/all.js doesn't exist.
+loading  /js/views/partials/navbar.js
+loading  /js/models/category.js
+loading  /js/routers/router.js
+loading  /js/views/partials/modalsigninup.js
+loading  /js/models/server.js
+loading  /components/cryptojs-sha1/enc-base64.js
+loading  /components/cryptojs-sha1/cryptojs-sha1.js
+loading  /js/models/user.js
+loading  /js/views/partials/modalfacebookcompletesignup.js
+loading  /templates/partials/modal-fb-complete-sign-up.html
+warning: template directives found. Not parsing /templates/partials/modal-fb-complete-sign-up.html
+loading  /templates/partials/modal-sign-in-up.html
+warning: template directives found. Not parsing /templates/partials/modal-sign-in-up.html
+loading  /templates/partials/navbar.html
+warning: template directives found. Not parsing /templates/partials/navbar.html
+loading  /js/views/partials/categorysubnavbar.js
+loading  /templates/partials/categorysubnavbar.html
+warning: template directives found. Not parsing /templates/partials/categorysubnavbar.html
+loading  /js/views/partials/modaladdtolist.js
+loading  /templates/partials/modal-add-to-list.html
+warning: template directives found. Not parsing /templates/partials/modal-add-to-list.html
+loading  /js/views/partials/emailconfirmationbanner.js
+loading  /templates/partials/email-confirmation-banner.html
+loading  /js/models/analytics.js
+loading  /templates/about.html
+loading  /connect.facebook.net/en_US/all.js
+error:file /Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com/connect.facebook.net/en_US/all.js doesn't exist.
+loading  /templates/careers.html
+loading  /templates/partials/like-button.html
+warning: template directives found. Not parsing /templates/partials/like-button.html
+loading  /templates/partials/save-button.html
+warning: template directives found. Not parsing /templates/partials/save-button.html
+loading  /templates/category.html
+warning: template directives found. Not parsing /templates/category.html
+loading  /templates/contact.html
+loading  /components/async/async.js
+loading  /templates/feedcompare.html
+warning: template directives found. Not parsing /templates/feedcompare.html
+loading  /templates/feeds.html
+warning: template directives found. Not parsing /templates/feeds.html
+loading  /templates/home.html
+warning: template directives found. Not parsing /templates/home.html
+loading  /templates/invite.html
+warning: template directives found. Not parsing /templates/invite.html
+loading  /templates/loading.html
+loading  /templates/mobilebarcodes.html
+loading  /templates/notifications.html
+loading  /templates/partials/productcarousel.html
+warning: template directives found. Not parsing /templates/partials/productcarousel.html
+loading  /templates/partials/productcarouselitem.html
+warning: template directives found. Not parsing /templates/partials/productcarouselitem.html
+loading  /templates/password.html
+loading  /templates/product.html
+warning: template directives found. Not parsing /templates/product.html
+loading  /templates/partials/productsrelated.html
+warning: template directives found. Not parsing /templates/partials/productsrelated.html
+loading  /templates/productbarcodes.html
+loading  /templates/partials/profile-likes.html
+warning: template directives found. Not parsing /templates/partials/profile-likes.html
+loading  /templates/partials/profile-followers.html
+warning: template directives found. Not parsing /templates/partials/profile-followers.html
+loading  /templates/partials/profile-following.html
+warning: template directives found. Not parsing /templates/partials/profile-following.html
+loading  /templates/profile.html
+warning: template directives found. Not parsing /templates/profile.html
+loading  /templates/profilesettings.html
+warning: template directives found. Not parsing /templates/profilesettings.html
+loading  /templates/recentlyviewed.html
+warning: template directives found. Not parsing /templates/recentlyviewed.html
+loading  /templates/search.html
+warning: template directives found. Not parsing /templates/search.html
+loading  /templates/userlist.html
+warning: template directives found. Not parsing /templates/userlist.html
+loading  /components/moment/moment.min.js
+loading  /templates/userlists.html
+warning: template directives found. Not parsing /templates/userlists.html
+
+loaded 98 assets:
+   style : 2
+   image : 4
+   javascript : 57
+   html : 35
