@@ -252,7 +252,7 @@ Asset = (function() {
       compressor = UglifyJS.Compressor();
       this.obj.transform(compressor);
       minified = this.obj.print_to_string({
-        beautify: true
+        beautify: false
       });
     } else if (this.type === 'style') {
       minified = css.stringify(this.obj, {
@@ -364,7 +364,7 @@ Asset = (function() {
   };
 
   Asset.prototype._parseRequireStatement = function(node) {
-    var alias, found, inRequireJS, newAssetPath, p, pa, scriptpath, _i, _len, _ref, _ref1, _results;
+    var found, inRequireJS, newAssetPath, p, scriptpath, _i, _len, _ref, _results;
     if (!node.args[0].elements) {
       return;
     }
@@ -383,17 +383,16 @@ Asset = (function() {
 
         } else if (requireJS) {
           found = false;
-          _ref1 = requireJS.paths;
-          for (alias in _ref1) {
-            pa = _ref1[alias];
-            if (alias === scriptpath.value) {
-              found = true;
-              newAssetPath = join(p, "" + pa + ".js");
-            }
-          }
-          if (!found) {
-            console.log("error 1: could not find asset " + scriptpath.value);
-          }
+          /*
+          					# see if the script corresponds to one in the RequireJS path list
+          					for alias, pa of requireJS.paths
+          						if alias is scriptpath.value
+          							found = true
+          							newAssetPath = join p, "#{pa}.js"
+          					if !found
+          						console.log "error 1: could not find asset #{scriptpath.value}"
+          */
+
         } else {
           console.log("error: could not find asset " + scriptpath.value);
         }

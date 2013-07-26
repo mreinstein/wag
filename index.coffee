@@ -224,7 +224,7 @@ class Asset
 			@obj.figure_out_scope()
 			compressor = UglifyJS.Compressor()
 			@obj.transform compressor
-			minified = @obj.print_to_string { beautify: true }
+			minified = @obj.print_to_string { beautify: false }
 			#console.log '    before', before.length, 'after', minified.length
 		else if @type is 'style'
 			#before = fs.readFileSync join(@root, @filepath), 'utf8'
@@ -345,12 +345,15 @@ class Asset
 					# ignore exports for scriptpath.value and references to requireJS
 				else if requireJS
 					found = false
+					###
+					# see if the script corresponds to one in the RequireJS path list
 					for alias, pa of requireJS.paths
 						if alias is scriptpath.value
 							found = true
 							newAssetPath = join p, "#{pa}.js"
 					if !found
 						console.log "error 1: could not find asset #{scriptpath.value}"
+					###
 				else
 					console.log "error: could not find asset #{scriptpath.value}"
 
