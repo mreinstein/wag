@@ -1,20 +1,14 @@
-
-# expirimental prototype to provide _extremely_ optimized production website deploys
-# inspired by assetgraph    https://github.com/One-com/assetgraph
+# inspired by assetgraph
+#	https://github.com/One-com/assetgraph
 #
-# 	https://github.com/tautologistics/node-htmlparser
-#	https://github.com/NV/CSSOM
+# uses these libraries for html,css,js parsing/minification
+# 	https://github.com/fb55/htmlparser2
+#	https://github.com/visionmedia/css
 #	https://github.com/mishoo/UglifyJS2
-
-# references:
-#	https://github.com/One-com/assetgraph/blob/master/lib/assets/JavaScript.js
-#	http://marijnhaverbeke.nl/blog/acorn.html
-#	http://esprima.org/doc/index.html#ast
-#	https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API
-
-# https://github.com/kangax/html-minifier   may be interesting at some point. For now not needed
-# https://github.com/GoalSmashers/enhance-css    may have interesting stuff on caching, etc
-
+#
+# might be interesting points for further research
+# 	https://github.com/kangax/html-minifier
+# 	https://github.com/GoalSmashers/enhance-css
 
 htmlparser = require 'htmlparser2'
 css        = require 'css'
@@ -24,15 +18,14 @@ join       = path.join
 fs         = require 'fs'
 _          = require 'underscore'
 crypto     = require 'crypto'
-shell      = require 'shelljs'
 
+# NOTE: renaming assets based on MD5 hash must be done in order because any 
+#		assets that depend on that renamed file will mean the 
+#		reference to that asset has to be updated, which will cascade through
+#		the graph! the solution is to traverse through all dependencies, and
+#		rename leaf nodes first, then work backwards.
 
-# NOTE: MD5'ing assets must be done in a specific order:
-#		Png, Gif, Jpeg, Css, JavaScript, Html
-#		Javascript and HTML need to be analyzed for dependencies because they
-#		can refer to each other. This is important because changing the 
-#		references to files renamed to <md5>.<extension> will change the hash of the file!
-
+# TODO: this might come in handy when supporting templated .html files
 ###
 # parse html string as an underscore.js template, returning the list of 
 # string locations for each dynamic section
@@ -79,6 +72,43 @@ class Asset
 		@hash     = null
 		@obj      = @_buildObject @filepath, @type
 
+
+	hashValue: ->
+		if @hash then return
+
+		# determine if any of the dependencies aren't named by hash
+		for node in @to
+			if !node.asset.hash then node.asset.hashValue()
+
+		md5sum = crypto.createHash 'md5'
+
+		if @type is 'javascript'
+			md5sum.update @obj.print_to_string({ beautify: false })
+			@hash = md5sum.digest 'hex'
+		else if @type is 'style'
+			if @minified
+				md5sum.update @minified
+			else
+				md5sum.update css.stringify(@obj)
+			@hash = md5sum.digest 'hex'
+		else if @type is 'html'
+			#
+			# TODO remove after html templates are supported
+			if typeof(@obj) is 'string'
+				md5sum.update @obj
+				@hash = md5sum.digest 'hex'
+			else
+				for d in @obj
+					md5sum.update htmlparser.DomUtils.getOuterHTML(d)
+				@hash = md5sum.digest 'hex'
+		else if @type is 'image'
+			md5sum.update @obj
+			@hash = md5sum.digest 'hex'
+
+		newPath = path.dirname(@filepath) + '/' + @hash + path.extname(@filepath)
+		@move newPath
+
+
 	minify: ->
 		if @minified then return
 
@@ -100,6 +130,12 @@ class Asset
 			@minified = css.stringify @obj, { compress: true }
 			#console.log '    before', before.length, 'after', ast.length
 		else if @type is 'html'
+			#
+			# TODO remove after html templates are supported
+			if typeof(@obj) is 'string'
+				@minified = @obj
+				return
+			#
 			@minified = ''
 			for d in @obj
 				@minified += htmlparser.DomUtils.getOuterHTML(d)
@@ -145,39 +181,16 @@ class Asset
 			@ag.addAsset this
 			delete @ag.nodes[oldpath]
 
-	hashValue: ->
-		if @hash then return
-
-		# determine if any of the dependencies aren't named by hash
-		for node in @to
-			if !node.asset.hash then node.asset.hashValue()
-
-		md5sum = crypto.createHash 'md5'
-
-		if @type is 'javascript'
-			md5sum.update @obj.print_to_string({ beautify: false })
-			@hash = md5sum.digest 'hex'
-		else if @type is 'style'
-			if @minified
-				md5sum.update @minified
-			else
-				md5sum.update css.stringify(@obj)
-			@hash = md5sum.digest 'hex'
-		else if @type is 'html'
-			for d in @obj
-				md5sum.update htmlparser.DomUtils.getOuterHTML(d)
-			@hash = md5sum.digest 'hex'
-		else if @type is 'image'
-			md5sum.update @obj
-			@hash = md5sum.digest 'hex'
-
-		newPath = path.dirname(@filepath) + '/' + @hash + path.extname(@filepath)
-		@move newPath
-
 	writeToDisc: (destination) ->
 		if @minified
 			fs.writeFileSync join(destination, @filepath), @minified 
 		else if @type is 'html'
+			#
+			# TODO remove after html templates are supported
+			if typeof(@obj) is 'string'
+				fs.writeFileSync join(destination, @filepath), @obj
+				return
+			#
 			out = ''
 			for d in @obj
 				out += htmlparser.DomUtils.getOuterHTML(d)
@@ -197,6 +210,12 @@ class Asset
 
 		file = fs.readFileSync absPath, 'utf8'
 		if type is 'html'
+			#
+			# TODO remove after html templates are supported
+			if file.indexOf('<%') >= 0
+				console.log 'warning: template directives found. Not parsing', filepath
+				return file
+			#
 			d = null
 			handler = new htmlparser.DomHandler (er, dom) =>
 				if er
@@ -221,7 +240,7 @@ class Asset
 	_determineType: (filepath) ->
 		ext = path.extname(filepath or '').split '.'
 		ext = ext[ext.length - 1]
-		if ext is 'html' or ext is 'html'
+		if ext is 'html' or ext is 'htm'
 			type = 'html'
 		else if ext is 'js'
 			type = 'javascript'
@@ -423,7 +442,8 @@ class AssetGraph
 			a.hash = null
 
 		for p, a of @nodes
-			a.hashValue()
+			if p isnt 'index.html'
+				a.hashValue()
 
 	writeAssetsToDisc: (destination) ->
 		for p, a of @nodes
