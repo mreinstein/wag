@@ -1,7 +1,7 @@
 wag
 ===
 
-![Alt text](wag-thumb.jpeg "The best meat's in the rump…")
+![Alt text](http://i.imgur.com/9eJTHZz.jpg "The best meat's in the rump…")
 
 Web AssetGraph Library
 

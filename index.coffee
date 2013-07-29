@@ -119,13 +119,22 @@ class Asset
 
 	resolveDependencies: ->
 		for p in @pending
-			asset = @ag.nodes[p.filepath] or new Asset(@root, p.filepath, @ag)
+
+			if !@ag.nodes[p.filepath]
+				asset = new Asset(@root, p.filepath, @ag)
+			else
+				asset = @ag.nodes[p.filepath] 
+
+			#isNew = @ag.nodes[p.filepath]?
+			#asset = @ag.nodes[p.filepath]? or new Asset(@root, p.filepath, @ag)
+			#console.log 'isNew', isNew, 'pending count', asset.pending.length
 			# only add the asset if it's object could be created (javascript ast, html dom, css style, etc)
 			if asset.obj
 				asset.from.push { asset: this, node: p.node, inRequireJS: p.inRequireJS }
 				@to.push { asset: asset, node: p.node, inRequireJS: p.inRequireJS }
-				@ag.addAsset asset
-				asset.resolveDependencies()
+				added = @ag.addAsset asset
+
+				if added then asset.resolveDependencies()
 		@pending = []
 
 	writeToDisc: (destination, useHashName) ->
@@ -295,6 +304,9 @@ class Asset
 		###
 		toplevel = UglifyJS.parse file, opts
 
+		# track nodes already encountered to prevent graph cycles from infinitely recursing
+		#visited = {}
+
 		# recursively parse an UglifyJS AST node
 		walker = new UglifyJS.TreeWalker (node) =>
 			if node instanceof UglifyJS.AST_Call and node.start.type is 'name' and node.start.value is 'require'
@@ -304,12 +316,9 @@ class Asset
 				else if node.args.length is 2
 					# has the script paths to require
 					@_parseRequireStatement node
-				return true # don't descend into RequireJS function calls
-
 			if node instanceof UglifyJS.AST_Call and node.start.type is 'name' and node.start.value is 'define'
 				@_parseRequireStatement node
-				return true # don't descend into RequireJS function calls
-			false
+			false # descend through the entire tree
 
 		toplevel.walk walker
 		#console.log toplevel.print_to_string({ beautify: true })
@@ -466,6 +475,8 @@ class AssetGraph
 		if !@nodes[asset.filepath] and asset.type?
 			#console.log 'adding!', asset.filepath
 			@nodes[asset.filepath] = asset
+			return true
+		false
 
 
 module.exports.AssetGraph = AssetGraph
