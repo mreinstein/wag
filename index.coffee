@@ -138,6 +138,7 @@ class Asset
 		@pending = []
 
 	writeToDisc: (destination, useHashName) ->
+		@written = true # mark this asset as written to disc first, to avoid infinite graph cycles
 		if useHashName
 			for t in @to
 				if !t.asset.written
@@ -154,7 +155,6 @@ class Asset
 		# write this element out
 		out = @_toString()
 		if out then fs.writeFileSync join(destination, @filepath), out
-		@written = true # mark this asset as written to disc
 
 	_buildObject: ->
 		result = null
