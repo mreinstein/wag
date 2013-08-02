@@ -4,16 +4,15 @@
 AssetGraph = require('./index.coffee').AssetGraph
 path       = require 'path'
 join       = path.join
-shell      = require 'shelljs'
 
 # usage
-root = '/Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com'
+root = '/Users/mikereinstein/wwwroot/shopsavvy-web/shopsavvy.com/public'
 
 ag = new AssetGraph root
 
 # load all of the asset files directly
 ag.loadAssets 'index.html'
-ag.loadAssets 'js/'
+#ag.loadAssets 'js/'
 
 console.log "\nloaded #{Object.keys(ag.nodes).length} assets:"
 
