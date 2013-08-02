@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-var join, pkg, program, AssetGraph, path, ag, typecount;
+var join, pkg, program, AssetGraph, path, ag, typecount, shell;
 
 path    = require('path');
 join    = path.join;
 pkg     = require(join(__dirname, '..', 'package'));
 program = require('commander');
+shell = require('shelljs');
 
 program
   .version(pkg.version)
@@ -54,5 +55,9 @@ if(program.minify) {
 ag.moveAssets('static/');
 
 hash = (typeof program.hash !== "undefined" && program.hash !== null);
+
+// clean out and create the output directory
+shell.rm('-Rf', join(program.out, '*'));
+shell.mkdir('-p', join(program.out, 'static'));
 
 ag.writeAssetsToDisc(program.out, hash);

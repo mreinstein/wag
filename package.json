@@ -1,6 +1,6 @@
 {
   "name": "wag",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.",
   "main": "index.js",
   "preferGlobal": true,
@@ -27,7 +27,8 @@
     "css": "1.4.x",
     "htmlparser2": "3.1.x",
     "uglify-js": "2.3.x",
-    "commander": "~2.0.0"
+    "commander": "~2.0.0",
+    "shelljs": "~0.1.4"
   },
   "bin": {
     "wag": "./bin/wag.js"
