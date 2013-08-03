@@ -203,7 +203,7 @@ class Asset
 			else if type is 'javascript'
 				result = @_parseJavascript filepath, file
 			else if type is 'image'
-				result = fs.readFileSync(absPath, 'utf8')
+				result = fs.readFileSync absPath
 		result
 
 	_determineType: (filepath) ->

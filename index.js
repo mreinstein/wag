@@ -217,7 +217,7 @@
         } else if (type === 'javascript') {
           result = this._parseJavascript(filepath, file);
         } else if (type === 'image') {
-          result = fs.readFileSync(absPath, 'utf8');
+          result = fs.readFileSync(absPath);
         }
       }
       return result;
