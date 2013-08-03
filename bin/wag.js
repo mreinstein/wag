@@ -14,6 +14,7 @@ program
   .option('-o, --out [output]', 'output directory')
   .option('-m, --minify', 'minify the output')
   .option('-h, --hash', 'rename files based on hash')
+  .option('-c, --cdnroot [cdnroot]', 'optional cdn root to prepend (e.g., mycdn.example.com )')
   .parse(process.argv);
 
 // print help and exit with error if input or output options are missing
@@ -53,6 +54,10 @@ if(program.minify) {
 }
 
 ag.moveAssets('static/');
+
+if(program.cdnroot) {
+  ag.setUrlPrefix(program.cdnroot);
+}
 
 hash = (typeof program.hash !== "undefined" && program.hash !== null);
 

@@ -139,22 +139,35 @@ class Asset
 
 	writeToDisc: (destination, useHashName) ->
 		@written = true # mark this asset as written to disc first, to avoid infinite graph cycles
-		if useHashName
+
+		# renaming assets based on content hash or using a prefix will cause the
+		# references to change, so update all assets that reference this one first.
+		if useHashName or @prefix
 			for t in @to
 				if !t.asset.written
 					t.asset.writeToDisc destination, useHashName
 
-			# don't rename the index file
-			if @filepath isnt 'index.html'
-				# calculate this asset's hash because children's references have changed
-				hash = @_hash()
-				# update all assets that reference this one
-				newPath = path.dirname(@filepath) + '/' + hash + path.extname(@filepath)
-				@move newPath
+		if useHashName and @filepath isnt 'index.html'  # don't rename the index file
+			# calculate this asset's hash because children's references have changed
+			newPath = path.dirname(@filepath) + '/' + @_hash() + path.extname(@filepath)
+		else
+			newPath = destination + @filepath
+
+		if useHashName or @prefix
+			if @filepath isnt 'index.html'  # don't rename the index file
+				# a URL prefix is specified, so rename the files to include the URL prefix
+				if @prefix
+					@move('http://' + @prefix + newPath)
+				else
+					@move newPath
 
 		# write this element out
 		out = @_toString()
-		if out then fs.writeFileSync join(destination, @filepath), out
+		if out
+			if @filepath is 'index.html'
+				fs.writeFileSync join(destination, @filepath), out
+			else
+				fs.writeFileSync join(destination, newPath), out
 
 	_buildObject: ->
 		result = null
@@ -448,6 +461,11 @@ class AssetGraph
 			if p isnt 'index.html'
 				newpath = join '/', destination, '/', path.basename(p)
 				a.move newpath
+
+	setUrlPrefix: (prefix) ->
+		for p,a of @nodes
+			if p isnt 'index.html'
+				a.prefix = prefix
 
 	writeAssetsToDisc: (destination, useHashName=false) ->
 		# mark all of the assets as unwritten
