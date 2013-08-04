@@ -34,7 +34,7 @@ console.log("\nloaded " + Object.keys(ag.nodes).length + " assets:");
 
 typecount = {};
 
-var count, k, out, type, useHashName, v, _ref;
+var count, k, type, useHashName, v, _ref;
 
 _ref = ag.nodes;
 for (k in _ref) {
@@ -69,5 +69,5 @@ shell.mkdir('-p', join(program.out, 'static'));
 ag.writeAssetsToDisc(program.out, hash);
 
 if (program.manifest && program.manifest + '' !== 'false') {
-  ag.generateAppCache(out, program.manifest);
+  ag.generateAppCache(program.out, program.manifest);
 }
