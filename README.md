@@ -18,11 +18,11 @@ This tool is inspired by assetgraph and assetgraph-builder.
 ### Features
 * very fast
 * simple API*
-* über small (< 500 lines of code)
+* über small (~ 600 lines of code)
 * supports basic RequireJS and Browserify syntax
 * can generate HTML5 appcache manifests
 * can rename files based on their MD5 hash
-* can compress css and javascript
+* can compress css, javascript, and images (jpg, png, svg)
 
 ### Usage
 

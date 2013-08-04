@@ -16,8 +16,10 @@ UglifyJS   = require 'uglify-js'
 path       = require 'path'
 join       = path.join
 fs         = require 'fs'
+os         = require 'os'
 _          = require 'underscore'
 crypto     = require 'crypto'
+shell      = require 'shelljs'
 appcacheRender = require 'render-appcache-manifest'
 appcacheParse  = require 'parse-appcache-manifest'
 
@@ -26,41 +28,6 @@ appcacheParse  = require 'parse-appcache-manifest'
 #		reference to that asset has to be updated, which will cascade through
 #		the graph! the solution is to traverse through all dependencies, and
 #		rename leaf nodes first, then work backwards.
-
-# TODO: this might come in handy when supporting templated .html files
-###
-# parse html string as an underscore.js template, returning the list of 
-# string locations for each dynamic section
-parseHtmlUnderscoreTemplate = (html) ->
-	idx = 0
-	open = false
-	dynamic = []
-	while idx < html.length and idx >= 0
-		if open
-			q = '%>'
-		else
-			q = '<%'
-		pos = html.indexOf q, idx
-		if pos > -1
-			if open
-				dynamic.push { start: idx-2, end: pos+2 }
-			open = !open
-			idx = pos + 2
-		else
-			idx = pos
-	# if any tags are left open, template has problemzz
-	if open and dynamic.length > 0
-		throw new Error('Invalid Template')
-	dynamic
-
-# given a DOM node, a set of changes, and a list of dynamic sections, product 
-# an Html string that applies all changes and inserts the dynamic parts in
-updateHtmlUnderscoreTemplate = (node, deltas, dynamic) ->
-	# TODO
-	# NOTE: templates/product.html is a great test example because it's large, 
-	#		and has all 3 underscore tag types used:  <%   <%=   <%-
-	''
-###
 
 requireJS = null
 
@@ -74,6 +41,7 @@ class Asset
 		@minify   = false
 		@pending  = [] # unresolved references to other nodes
 		@obj      = @_buildObject @filepath, @type
+
 
 	move: (destination) ->
 		oldpath = JSON.parse(JSON.stringify(@filepath))
@@ -119,6 +87,7 @@ class Asset
 			@ag.addAsset this
 			delete @ag.nodes[oldpath]
 
+
 	resolveDependencies: ->
 		for p in @pending
 
@@ -138,6 +107,7 @@ class Asset
 
 				if added then asset.resolveDependencies()
 		@pending = []
+
 
 	writeToDisc: (destination, useHashName) ->
 		@written = true # mark this asset as written to disc first, to avoid infinite graph cycles
@@ -170,6 +140,7 @@ class Asset
 				fs.writeFileSync join(destination, @filepath), out
 			else
 				fs.writeFileSync join(destination, newPath), out
+
 
 	_buildObject: ->
 		result = null
@@ -208,6 +179,7 @@ class Asset
 				result = fs.readFileSync absPath
 		result
 
+
 	_determineType: (filepath) ->
 		ext = path.extname(filepath or '').split '.'
 		ext = ext[ext.length - 1]
@@ -220,6 +192,7 @@ class Asset
 		else if ext is 'png' or ext is 'gif' or ext is 'jpg' or ext is 'jpeg' or ext is 'ico' or ext is 'svg'
 			type = 'image'
 		type
+
 
 	_foundAssetReference: (filepath, node, inRequireJS=false) ->
 		# if there's no asset graph, don't bother linking up the asset
@@ -234,6 +207,7 @@ class Asset
 			inRequireJS : inRequireJS
 		}
 
+
 	# calculate the md5 hash of this asset's contents
 	_hash: ->
 		out = @_toString()
@@ -241,35 +215,89 @@ class Asset
 		md5sum.update out
 		md5sum.digest 'hex'
 
+
 	_minify: ->
 		minified = ''
 		if @type is 'javascript'
-			#before = fs.readFileSync join(@root, @filepath), 'utf8'
 			@obj.figure_out_scope()
 			# https://github.com/mishoo/UglifyJS2#compressor-options
 			# http://lisperator.net/uglifyjs/compress
 			compressor = UglifyJS.Compressor { unused: false}
 			@obj.transform compressor
 			minified = @obj.print_to_string { beautify: false }
-			#console.log '    before', before.length, 'after', minified.length
 		else if @type is 'style'
-			#before = fs.readFileSync join(@root, @filepath), 'utf8'
 			minified = css.stringify @obj, { compress: true }
-			#console.log '    before', before.length, 'after', ast.length
 		else if @type is 'html'
-			#
 			# TODO remove after html templates are supported
 			if typeof(@obj) is 'string'
 				minified = @obj
 			else
-				#
 				for d in @obj
 					minified += htmlparser.DomUtils.getOuterHTML(d)
 		else if @type is 'image'
 			minified = @obj
-			# TODO interesting image modules: jpegtran, optipng, pngcrush, 
-			# pngquant, assetgraph-sprite, histogram
+			ext = path.extname @filepath
+			if ext is '.jpg' or ext is '.jpeg'
+				if shell.which 'jpegtran'
+					console.log 'optimizing', ext, @filepath
+					tmpfile = join os.tmpdir(), 'wag12345'
+					outfile = join os.tmpdir(), 'wag12345.out'
+					fs.writeFileSync tmpfile, @obj
+					response = shell.exec "jpegtran -copy none -optimize -perfect -progressive -outfile #{outfile} #{tmpfile}", { silent : true }
+					if response.code isnt 0
+						console.log 'something went wrong; failed to optimize', @filepath, response.output	
+					else
+						minified = fs.readFileSync outfile
+					shell.rm tmpfile
+					shell.rm outfile
+				else
+					console.log 'WARN jpegtran is not installed, skipping optimizing ', @filepath
+			else if ext is '.png'
+				tmpfile = join os.tmpdir(), 'wag12345'
+				fs.writeFileSync tmpfile, @obj
+
+				if shell.which 'pngcrush'
+					console.log 'optimizing', @filepath, 'via pngcrush'
+					response = shell.exec "pngcrush -reduce -brute -ow #{tmpfile}", { silent : true }
+					if response.code isnt 0
+						console.log 'something went wrong; failed to optimize', @filepath, response.output
+				else
+					console.log 'WARN optipng is not installed, skipping optimizing ', @filepath
+
+				if shell.which 'optipng'
+					console.log 'optimizing', @filepath, 'via optipng'
+					response = shell.exec "optipng #{tmpfile}", { silent : true }
+					if response.code isnt 0
+						console.log 'something went wrong; failed to optimize', @filepath, response.output
+				else
+					console.log 'WARN optipng is not installed, skipping optimizing ', @filepath
+				
+				if shell.which 'pngquant'
+					console.log 'optimizing', @filepath, 'via pngquant'
+					response = shell.exec "pngquant --force #{tmpfile}", { silent : true }
+					if response.code isnt 0
+						console.log 'something went wrong; failed to optimize', @filepath, response.output
+					else
+						shell.mv '-f', "#{tmpfile}-fs8.png", tmpfile
+				else
+					console.log 'WARN pngquant is not installed, skipping optimizing ', @filepath
+				
+				minified = fs.readFileSync tmpfile
+				shell.rm tmpfile
+			else if ext is '.svg'
+				if shell.which 'svgo'
+					console.log 'optimizing', @filepath, 'via svgo'
+					tmpfile = join os.tmpdir(), 'wag12345'
+					fs.writeFileSync tmpfile, @obj
+					response = shell.exec "svgo --input #{tmpfile} --output -", { silent : true }
+					if response.code isnt 0
+						console.log 'something went wrong; failed to optimize', @filepath, response.output
+					else
+						minified = response.output
+				else
+					console.log 'WARN svgo is not installed, skipping optimizing ', @filepath
 		minified
+
 
 	# recursively parse a DOM node's structure
 	_parseDOMNode: (node) ->
@@ -309,6 +337,7 @@ class Asset
 			for n in node.children
 				@_parseDOMNode n
 
+
 	_parseJavascript: (filepath, file) ->
 		toplevel = null
 		opts = {}
@@ -339,6 +368,7 @@ class Asset
 		#console.log toplevel.print_to_string({ beautify: true })
 		toplevel
 
+
 	# parse a RequireJS configuration block and return it as JSON
 	_parseRequireJSConfig: (node) ->
 		cfg = {}
@@ -350,6 +380,7 @@ class Asset
 				for j in k.value.properties
 					cfg.paths[j.key] = j.value.value
 		cfg
+
 
 	# parse the required scripts out of the require/define statement
 	_parseRequireStatement: (node) ->
@@ -511,7 +542,6 @@ class AssetGraph
 		tokens.push { type: 'data', tokens: [ '*' ] }
 		tokens.push { type: 'data', tokens: [ 'http://*' ] }
 		tokens.push { type: 'data', tokens: [ 'https://*' ] }
-				
 
 		# update the index.html file
 		manifest = manifest.trim()
@@ -567,3 +597,38 @@ class AssetGraph
 
 module.exports.AssetGraph = AssetGraph
 module.exports.Asset = Asset
+
+# TODO: this might come in handy when supporting templated .html files
+###
+# parse html string as an underscore.js template, returning the list of 
+# string locations for each dynamic section
+parseHtmlUnderscoreTemplate = (html) ->
+	idx = 0
+	open = false
+	dynamic = []
+	while idx < html.length and idx >= 0
+		if open
+			q = '%>'
+		else
+			q = '<%'
+		pos = html.indexOf q, idx
+		if pos > -1
+			if open
+				dynamic.push { start: idx-2, end: pos+2 }
+			open = !open
+			idx = pos + 2
+		else
+			idx = pos
+	# if any tags are left open, template has problemzz
+	if open and dynamic.length > 0
+		throw new Error('Invalid Template')
+	dynamic
+
+# given a DOM node, a set of changes, and a list of dynamic sections, product 
+# an Html string that applies all changes and inserts the dynamic parts in
+updateHtmlUnderscoreTemplate = (node, deltas, dynamic) ->
+	# TODO
+	# NOTE: templates/product.html is a great test example because it's large, 
+	#		and has all 3 underscore tag types used:  <%   <%=   <%-
+	''
+###
