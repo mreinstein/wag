@@ -66,4 +66,8 @@ hash = (typeof program.hash !== "undefined" && program.hash !== null);
 shell.rm('-Rf', join(program.out, '*'));
 shell.mkdir('-p', join(program.out, 'static'));
 
-ag.writeAssetsToDisc(program.out, hash, program.manifest);
+ag.writeAssetsToDisc(program.out, hash);
+
+if (program.manifest && program.manifest + '' !== 'false') {
+  ag.generateAppCache(out, program.manifest);
+}
