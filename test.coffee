@@ -33,3 +33,7 @@ ag.moveAssets 'static/'
 out = '/Users/mikereinstein/Desktop/test'
 useHashName = true
 ag.writeAssetsToDisc out, useHashName
+
+manifest = 'blech.appcache'
+if manifest and manifest+'' isnt 'false'
+	ag.generateAppCache out, manifest

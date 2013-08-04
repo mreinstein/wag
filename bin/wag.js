@@ -10,11 +10,12 @@ shell = require('shelljs');
 
 program
   .version(pkg.version)
-  .option('-i, --inp [input]', 'input directory')
-  .option('-o, --out [output]', 'output directory')
-  .option('-m, --minify', 'minify the output')
-  .option('-h, --hash', 'rename files based on hash')
-  .option('-c, --cdnroot [cdnroot]', 'optional cdn root to prepend (e.g., mycdn.example.com )')
+  .option('--inp [input]', 'input directory')
+  .option('--out [output]', 'output directory')
+  .option('--minify', 'minify the output')
+  .option('--hash', 'rename files based on hash')
+  .option('--manifest [manifest]', 'create HTML5 appcache manifest')
+  .option('--cdnroot [cdnroot]', 'optional cdn root to prepend (e.g., mycdn.example.com )')
   .parse(process.argv);
 
 // print help and exit with error if input or output options are missing
@@ -65,4 +66,4 @@ hash = (typeof program.hash !== "undefined" && program.hash !== null);
 shell.rm('-Rf', join(program.out, '*'));
 shell.mkdir('-p', join(program.out, 'static'));
 
-ag.writeAssetsToDisc(program.out, hash);
+ag.writeAssetsToDisc(program.out, hash, program.manifest);

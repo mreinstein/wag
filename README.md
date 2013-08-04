@@ -16,11 +16,13 @@ This could become part of a grunt workflow, or you could build your own custom t
 This tool is inspired by assetgraph and assetgraph-builder.
 
 ### Features
-* partially supports RequireJS syntax
 * very fast
-* simple API
+* simple API*
 * über small (< 500 lines of code)
-
+* supports basic RequireJS and Browserify syntax
+* can generate HTML5 appcache manifests
+* can rename files based on their MD5 hash
+* can compress css and javascript
 
 ### Usage
 
@@ -50,6 +52,16 @@ out = '/Users/mike/Desktop/deployfolder'
 # rename each file (except for index.html) to an md5 hash of it's contents
 useHashName = true 
 ag.writeAssetsToDisc out, useHashName
+
+# generates /Users/mike/Desktop/deployfolder/awesome.appcache
+ag.generateAppCache out, 'awesome.appcache'
+
+# generates /Users/mike/Desktop/deployfolder/manifest.appcache
+#ag.generateAppCache out, true
+
+# note: if the appcache file already exists, it will have the 
+# new entries from the built assetgraph added to it, and an 
+# updated timestamp will be set in the file
 ```
 
 
