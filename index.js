@@ -633,18 +633,30 @@
               });
             }
           }
-          tokens.push({
-            type: 'newline'
-          });
-          tokens.push({
-            type: 'mode',
-            value: 'NETWORK'
-          });
-          tokens.push({
-            type: 'data',
-            tokens: ['*']
-          });
         }
+      }
+      tokens.push({
+        type: 'newline'
+      });
+      tokens.push({
+        type: 'mode',
+        value: 'NETWORK'
+      });
+      tokens.push({
+        type: 'data',
+        tokens: ['*']
+      });
+      tokens.push({
+        type: 'data',
+        tokens: ['http://*']
+      });
+      tokens.push({
+        type: 'data',
+        tokens: ['https://*']
+      });
+      manifest = manifest.trim();
+      if (manifest.indexOf('/') !== 0) {
+        manifest = '/' + manifest;
       }
       _ref1 = this.nodes['index.html'].obj;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -692,17 +704,6 @@
           });
         }
       }
-      tokens.push({
-        type: 'newline'
-      });
-      tokens.push({
-        type: 'mode',
-        value: 'NETWORK'
-      });
-      tokens.push({
-        type: 'data',
-        tokens: ['*']
-      });
       return tokens;
     };
 

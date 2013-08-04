@@ -505,12 +505,18 @@ class AssetGraph
 					if p isnt 'index.html'
 						tokens.push { type: 'data', tokens: [ a.filepath ] }
 
-				# add a catch-all so everything else falls back to regular caching rules
-				tokens.push { type: 'newline' }
-				tokens.push { type: 'mode', value: 'NETWORK' }
-				tokens.push { type: 'data', tokens: [ '*' ] }
+		# allow arbitrary URLs to be accessed if they aren't in the cache
+		tokens.push { type: 'newline' }
+		tokens.push { type: 'mode', value: 'NETWORK' }
+		tokens.push { type: 'data', tokens: [ '*' ] }
+		tokens.push { type: 'data', tokens: [ 'http://*' ] }
+		tokens.push { type: 'data', tokens: [ 'https://*' ] }
+				
 
 		# update the index.html file
+		manifest = manifest.trim()
+		if manifest.indexOf('/') isnt 0
+			manifest = '/' + manifest
 		for elem in @nodes['index.html'].obj
 			if elem.type is 'tag' and elem.name is 'html'
 				elem.attribs.manifest = manifest
@@ -534,9 +540,6 @@ class AssetGraph
 		for p, a of @nodes
 			if p isnt 'index.html'
 				tokens.push { type: 'data', tokens: [ a.filepath ] }
-		tokens.push { type: 'newline' }
-		tokens.push { type: 'mode', value: 'NETWORK' }
-		tokens.push { type: 'data', tokens: [ '*' ] }
 		tokens
 
 
