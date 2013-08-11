@@ -217,6 +217,7 @@ class Asset
 
 
 	_minify: ->
+		console.log 'calling minify on', @filepath, @type
 		minified = ''
 		if @type is 'javascript'
 			@obj.figure_out_scope()
@@ -239,7 +240,7 @@ class Asset
 			ext = path.extname @filepath
 			if ext is '.jpg' or ext is '.jpeg'
 				if shell.which 'jpegtran'
-					console.log 'optimizing', ext, @filepath
+					console.log 'optimizing', @filepath, 'via jpegtran'
 					tmpfile = join os.tmpdir(), 'wag12345'
 					outfile = join os.tmpdir(), 'wag12345.out'
 					fs.writeFileSync tmpfile, @obj
@@ -589,7 +590,6 @@ class AssetGraph
 	addAsset: (asset) ->
 		# only add graph assets that are new and have type set
 		if !@nodes[asset.filepath] and asset.type?
-			#console.log 'adding!', asset.filepath
 			@nodes[asset.filepath] = asset
 			return true
 		false

@@ -239,6 +239,7 @@
 
     Asset.prototype._minify = function() {
       var compressor, d, ext, minified, outfile, response, tmpfile, _i, _len, _ref;
+      console.log('calling minify on', this.filepath, this.type);
       minified = '';
       if (this.type === 'javascript') {
         this.obj.figure_out_scope();
@@ -264,10 +265,11 @@
           }
         }
       } else if (this.type === 'image') {
+        minified = this.obj;
         ext = path.extname(this.filepath);
-        if (ext === '.jpg') {
+        if (ext === '.jpg' || ext === '.jpeg') {
           if (shell.which('jpegtran')) {
-            console.log('optimizing jpeg', this.filepath);
+            console.log('optimizing', this.filepath, 'via jpegtran');
             tmpfile = join(os.tmpdir(), 'wag12345');
             outfile = join(os.tmpdir(), 'wag12345.out');
             fs.writeFileSync(tmpfile, this.obj);
@@ -276,7 +278,6 @@
             });
             if (response.code !== 0) {
               console.log('something went wrong; failed to optimize', this.filepath, response.output);
-              minified = this.obj;
             } else {
               minified = fs.readFileSync(outfile);
             }
@@ -284,14 +285,24 @@
             shell.rm(outfile);
           } else {
             console.log('WARN jpegtran is not installed, skipping optimizing ', this.filepath);
-            minified = this.obj;
           }
         } else if (ext === '.png') {
           tmpfile = join(os.tmpdir(), 'wag12345');
           fs.writeFileSync(tmpfile, this.obj);
+          if (shell.which('pngcrush')) {
+            console.log('optimizing', this.filepath, 'via pngcrush');
+            response = shell.exec("pngcrush -reduce -brute -ow " + tmpfile, {
+              silent: true
+            });
+            if (response.code !== 0) {
+              console.log('something went wrong; failed to optimize', this.filepath, response.output);
+            }
+          } else {
+            console.log('WARN optipng is not installed, skipping optimizing ', this.filepath);
+          }
           if (shell.which('optipng')) {
             console.log('optimizing', this.filepath, 'via optipng');
-            response = shell.exec("optipng -o5 " + tmpfile, {
+            response = shell.exec("optipng " + tmpfile, {
               silent: true
             });
             if (response.code !== 0) {
@@ -308,31 +319,29 @@
             if (response.code !== 0) {
               console.log('something went wrong; failed to optimize', this.filepath, response.output);
             } else {
-              minified = fs.readFileSync("" + tmpfile + "-fs8.png");
-              fs.writeFileSync(tmpfile, minified);
-              shell.rm("" + tmpfile + "-fs8.png");
+              shell.mv('-f', "" + tmpfile + "-fs8.png", tmpfile);
             }
           } else {
             console.log('WARN pngquant is not installed, skipping optimizing ', this.filepath);
           }
-          if (shell.which('pngcrush')) {
-            console.log('optimizing', this.filepath, 'via pngcrush');
-            outfile = join(os.tmpdir(), 'wag12345.out');
-            response = shell.exec("pngcrush -rem alla -reduce -brute " + tmpfile + " " + outfile, {
+          minified = fs.readFileSync(tmpfile);
+          shell.rm(tmpfile);
+        } else if (ext === '.svg') {
+          if (shell.which('svgo')) {
+            console.log('optimizing', this.filepath, 'via svgo');
+            tmpfile = join(os.tmpdir(), 'wag12345');
+            fs.writeFileSync(tmpfile, this.obj);
+            response = shell.exec("svgo --input " + tmpfile + " --output -", {
               silent: true
             });
             if (response.code !== 0) {
               console.log('something went wrong; failed to optimize', this.filepath, response.output);
             } else {
-              minified = fs.readFileSync(outfile);
-              fs.writeFileSync(tmpfile, minified);
-              shell.rm(outfile);
+              minified = response.output;
             }
+          } else {
+            console.log('WARN svgo is not installed, skipping optimizing ', this.filepath);
           }
-          shell.rm(tmpfile);
-          minified = fs.readFileSync(tmpfile);
-        } else {
-          minified = this.obj;
         }
       }
       return minified;
