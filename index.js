@@ -137,7 +137,7 @@
       if (useHashName || this.prefix) {
         if (this.filepath !== 'index.html') {
           if (this.prefix) {
-            this.move('http://' + this.prefix + newPath);
+            this.move('//' + this.prefix + newPath);
           } else {
             this.move(newPath);
           }

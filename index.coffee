@@ -129,7 +129,7 @@ class Asset
 			if @filepath isnt 'index.html'  # don't rename the index file
 				# a URL prefix is specified, so rename the files to include the URL prefix
 				if @prefix
-					@move('http://' + @prefix + newPath)
+					@move('//' + @prefix + newPath)
 				else
 					@move newPath
 
