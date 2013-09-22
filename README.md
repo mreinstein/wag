@@ -5,6 +5,7 @@ wag
 
 Web AssetGraph Library
 
+
 ### ?
 wag is a tool that parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.
 
@@ -26,9 +27,7 @@ This tool is inspired by assetgraph and assetgraph-builder.
 
 ### Usage
 
-```
-npm install wag
-```
+[![NPM](https://nodei.co/npm/wag.png)](https://nodei.co/npm/wag/)
 
 
 ```coffeescript
