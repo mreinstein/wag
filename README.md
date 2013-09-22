@@ -21,14 +21,30 @@ This tool is inspired by assetgraph and assetgraph-builder.
 * simple API*
 * über small (~ 600 lines of code)
 * supports basic RequireJS and Browserify syntax
+* provides command line tool and programmatic API
 * can generate HTML5 appcache manifests
 * can rename files based on their MD5 hash
+* can prefix assets with a CDN host
 * can compress css, javascript, and images (jpg, png, svg)
 
 ### Usage
 
 [![NPM](https://nodei.co/npm/wag.png)](https://nodei.co/npm/wag/)
 
+
+#### Command Line Example
+```sh
+cd projectdir
+wag --inp public/ --out deploy/ --cdnroot mycdn.cloudfront.net --hash --minify --manifest'
+```
+
+What this does:
+1. Traverse assets in a `public/` directory, writing them out to `deploy/`.
+2. Minifies each file.
+3. Renames the assets to the md5 of the their contents.
+4. Generates an HTML5 appcache manifest file and links it to index.html.
+
+#### Programmatic Example
 
 ```coffeescript
 AssetGraph = require('wag').AssetGraph
