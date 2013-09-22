@@ -39,10 +39,12 @@ wag --inp public/ --out deploy/ --cdnroot mycdn.cloudfront.net --hash --minify -
 ```
 
 What this does:
+
 1. Traverse assets in a `public/` directory, writing them out to `deploy/`.
 2. Minifies each file.
-3. Renames the assets to the md5 of the their contents.
-4. Generates an HTML5 appcache manifest file and links it to index.html.
+3. Renames the assets to the md5 of the their contents. (e.g., `/img/dog.png` is re-rewritten to `/static/343e32abce3968feac.png`)
+4. re-writes the URL for the asset to point at a CDN version (e.g., `/static/343e32abce3968feac.png` is re-written to `//mycdn.cloudfront.net/static/343e32abce3968feac.png` )
+5. Generates an HTML5 appcache manifest file and links it to index.html.
 
 #### Programmatic Example
 
