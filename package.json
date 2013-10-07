@@ -25,8 +25,8 @@
   "dependencies": {
     "underscore": "1.5.x",
     "css": "1.4.x",
-    "htmlparser2": "3.1.x",
-    "uglify-js": "2.3.x",
+    "htmlparser2": "3.3.x",
+    "uglify-js": "2.4.x",
     "commander": "2.0.x",
     "parse-appcache-manifest": "0.2.x",
     "render-appcache-manifest": "https://github.com/mreinstein/render-appcache-manifest/archive/master.tar.gz",
