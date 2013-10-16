@@ -20,8 +20,6 @@ os         = require 'os'
 _          = require 'underscore'
 crypto     = require 'crypto'
 shell      = require 'shelljs'
-appcacheRender = require 'render-appcache-manifest'
-appcacheParse  = require 'parse-appcache-manifest'
 
 # NOTE: renaming assets based on MD5 hash must be done in order because any 
 #		assets that depend on that renamed file will mean the 
@@ -509,70 +507,6 @@ class AssetGraph
 		for p, a of @nodes
 			a.writeToDisc destination, useHashName
 
-		
-	generateAppCache: (destination, manifest) ->
-		if manifest+'' is 'true'
-			manifest = 'manifest.appcache'
-			console.log 'generating ', manifest
-			tokens = @_generateAppCacheTokens()
-		else
-			currentManifest = join @root, manifest
-			if !fs.existsSync currentManifest
-				console.log 'generating ', manifest
-				tokens = @_generateAppCacheTokens()
-			else
-				console.log 'parsing', manifest
-				input = fs.readFileSync currentManifest, 'utf8'
-				tokens = appcacheParse input, { tokenize: true }
-
-				# add a date string to just below the magic signature to ensure
-				# each generated manifest file will invalidate the old one
-				now = new Date()
-				tokens.splice 1, 0, { type: 'comment', value: now.toString("dd/M/yy h:mm tt") }
-
-				# append the resources to cache into the manifest
-				tokens.push { type: 'newline' }
-				tokens.push { type: 'mode', value: 'CACHE' }
-				for p, a of @nodes
-					if p isnt 'index.html'
-						tokens.push { type: 'data', tokens: [ a.filepath ] }
-
-		# allow arbitrary URLs to be accessed if they aren't in the cache
-		tokens.push { type: 'newline' }
-		tokens.push { type: 'mode', value: 'NETWORK' }
-		tokens.push { type: 'data', tokens: [ '*' ] }
-		tokens.push { type: 'data', tokens: [ 'http://*' ] }
-		tokens.push { type: 'data', tokens: [ 'https://*' ] }
-
-		# update the index.html file
-		manifest = manifest.trim()
-		if manifest.indexOf('/') isnt 0
-			manifest = '/' + manifest
-		for elem in @nodes['index.html'].obj
-			if elem.type is 'tag' and elem.name is 'html'
-				elem.attribs.manifest = manifest
-		@nodes['index.html'].writeToDisc destination
-
-		# write the appcache file to disc
-		out = appcacheRender tokens, { tokenized: true }
-		manifest = join destination, manifest
-		console.log 'writing appcache manifest to ', manifest
-		fs.writeFileSync manifest, out
-
-
-	_generateAppCacheTokens: ->
-		tokens = [ { type: 'magic signature', value: 'CACHE MANIFEST' } ]
-		now = new Date()
-		tokens.push { type: 'comment', value: now.toString("dd/M/yy h:mm tt") }
-		tokens.push { type: 'newline' }
-
-		# append the resources to cache into the manifest
-		tokens.push { type: 'mode', value: 'CACHE' }
-		for p, a of @nodes
-			if p isnt 'index.html'
-				tokens.push { type: 'data', tokens: [ a.filepath ] }
-		tokens
-
 
 	_load: (filepath) ->
 		absPath = join @root, filepath
@@ -597,38 +531,3 @@ class AssetGraph
 
 module.exports.AssetGraph = AssetGraph
 module.exports.Asset = Asset
-
-# TODO: this might come in handy when supporting templated .html files
-###
-# parse html string as an underscore.js template, returning the list of 
-# string locations for each dynamic section
-parseHtmlUnderscoreTemplate = (html) ->
-	idx = 0
-	open = false
-	dynamic = []
-	while idx < html.length and idx >= 0
-		if open
-			q = '%>'
-		else
-			q = '<%'
-		pos = html.indexOf q, idx
-		if pos > -1
-			if open
-				dynamic.push { start: idx-2, end: pos+2 }
-			open = !open
-			idx = pos + 2
-		else
-			idx = pos
-	# if any tags are left open, template has problemzz
-	if open and dynamic.length > 0
-		throw new Error('Invalid Template')
-	dynamic
-
-# given a DOM node, a set of changes, and a list of dynamic sections, product 
-# an Html string that applies all changes and inserts the dynamic parts in
-updateHtmlUnderscoreTemplate = (node, deltas, dynamic) ->
-	# TODO
-	# NOTE: templates/product.html is a great test example because it's large, 
-	#		and has all 3 underscore tag types used:  <%   <%=   <%-
-	''
-###

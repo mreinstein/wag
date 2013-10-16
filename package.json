@@ -1,6 +1,6 @@
 {
   "name": "wag",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.",
   "main": "index.js",
   "preferGlobal": true,
@@ -28,8 +28,6 @@
     "htmlparser2": "3.3.x",
     "uglify-js": "2.4.x",
     "commander": "2.0.x",
-    "parse-appcache-manifest": "0.2.x",
-    "render-appcache-manifest": "https://github.com/mreinstein/render-appcache-manifest/archive/master.tar.gz",
     "shelljs": "0.2.x"
   },
   "bin": {

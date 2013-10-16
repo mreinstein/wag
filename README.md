@@ -19,10 +19,9 @@ This tool is inspired by assetgraph and assetgraph-builder.
 ### Features
 * very fast
 * simple API*
-* über small (~ 600 lines of code)
+* only 500 lines of code
 * supports basic RequireJS and Browserify syntax
 * provides command line tool and programmatic API
-* can generate HTML5 appcache manifests
 * can rename files based on their MD5 hash
 * can prefix assets with a CDN host
 * can compress css, javascript, and images (jpg, png, svg)
@@ -35,7 +34,7 @@ This tool is inspired by assetgraph and assetgraph-builder.
 #### Command Line Example
 ```sh
 cd projectdir
-wag --inp public/ --out deploy/ --cdnroot mycdn.cloudfront.net --hash --minify --manifest'
+wag --inp public/ --out deploy/ --cdnroot mycdn.cloudfront.net --hash --minify'
 ```
 
 What this does:
@@ -44,7 +43,6 @@ What this does:
 2. Minifies each file.
 3. Renames the assets to the md5 of the their contents. (e.g., `/img/dog.png` is re-rewritten to `/static/343e32abce3968feac.png`)
 4. re-writes the URL for the asset to point at a CDN version (e.g., `/static/343e32abce3968feac.png` is re-written to `//mycdn.cloudfront.net/static/343e32abce3968feac.png` )
-5. Generates an HTML5 appcache manifest file and links it to index.html.
 
 #### Programmatic Example
 
@@ -69,16 +67,6 @@ out = '/Users/mike/Desktop/deployfolder'
 # rename each file (except for index.html) to an md5 hash of it's contents
 useHashName = true 
 ag.writeAssetsToDisc out, useHashName
-
-# generates /Users/mike/Desktop/deployfolder/awesome.appcache
-ag.generateAppCache out, 'awesome.appcache'
-
-# generates /Users/mike/Desktop/deployfolder/manifest.appcache
-#ag.generateAppCache out, true
-
-# note: if the appcache file already exists, it will have the 
-# new entries from the built assetgraph added to it, and an 
-# updated timestamp will be set in the file
 ```
 
 

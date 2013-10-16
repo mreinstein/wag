@@ -14,7 +14,6 @@ program
   .option('--out [output]', 'output directory')
   .option('--minify', 'minify the output')
   .option('--hash', 'rename files based on hash')
-  .option('--manifest [manifest]', 'create HTML5 appcache manifest')
   .option('--cdnroot [cdnroot]', 'optional cdn root to prepend (e.g., mycdn.example.com )')
   .parse(process.argv);
 
@@ -67,7 +66,3 @@ shell.rm('-Rf', join(program.out, '*'));
 shell.mkdir('-p', join(program.out, 'static'));
 
 ag.writeAssetsToDisc(program.out, hash);
-
-if (program.manifest && program.manifest + '' !== 'false') {
-  ag.generateAppCache(program.out, program.manifest);
-}
