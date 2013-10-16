@@ -535,13 +535,14 @@
     };
 
     Asset.parseStyleSheetUrl = function(declaration) {
-      var b, pos, pos2;
+      var b, pos, pos2, url;
       b = declaration.match(/url\((.+?)\)/gi);
       if (b) {
         pos = declaration.indexOf('url(');
         if (pos >= 0) {
           pos2 = declaration.indexOf(')', pos + 4);
-          return declaration.substring(pos + 4, pos2).trim();
+          url = declaration.substring(pos + 4, pos2).trim();
+          return url.replace(/"|'/g, '');
         }
       }
       return '';
