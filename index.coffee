@@ -49,7 +49,7 @@ class Asset
 		for f in @from
 			# f is pointing at the asset to move
 			if f.asset.type is 'style'
-				f.node.value = "url(#{destination})"
+				f.node.value = Asset.replaceStyleSheetUrl(f.node.value, destination)
 				#f.node.attribs.href = destination
 			else if f.asset.type is 'javascript'
 				if f.inRequireJS
@@ -464,6 +464,10 @@ class Asset
 				pos2 = declaration.indexOf ')', pos+4
 				return declaration.substring(pos+4, pos2).trim()
 		''
+
+	@replaceStyleSheetUrl: (declaration, newUrl) ->
+		currentUrl = Asset.parseStyleSheetUrl declaration
+		declaration.replace currentUrl, newUrl
 
 
 class AssetGraph 

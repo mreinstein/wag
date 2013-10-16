@@ -1,7 +1,7 @@
 {
   "name": "wag",
   "version": "0.5.0",
-  "description": "parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.",
+  "description": "Parses a connected pile of web assets (html, css, javascript, images) and builds a graph, modeling each file and the dependencies between them.",
   "main": "index.js",
   "preferGlobal": true,
   "scripts": {

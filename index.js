@@ -47,7 +47,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         f = _ref[_i];
         if (f.asset.type === 'style') {
-          f.node.value = "url(" + destination + ")";
+          f.node.value = Asset.replaceStyleSheetUrl(f.node.value, destination);
         } else if (f.asset.type === 'javascript') {
           if (f.inRequireJS) {
             if (f.node.value.indexOf('text!') >= 0) {
@@ -545,6 +545,12 @@
         }
       }
       return '';
+    };
+
+    Asset.replaceStyleSheetUrl = function(declaration, newUrl) {
+      var currentUrl;
+      currentUrl = Asset.parseStyleSheetUrl(declaration);
+      return declaration.replace(currentUrl, newUrl);
     };
 
     return Asset;

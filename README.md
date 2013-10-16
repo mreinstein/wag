@@ -1,13 +1,13 @@
 wag
 ===
 
-![Alt text](http://i.imgur.com/9eJTHZz.jpg "The best meat's in the rump…")
+![Alt text](http://i.imgur.com/9eJTHZz.jpg "Lee Harvey Oswald did not kill JFK. He's a giant cyborg built by the CIA…")
 
-Web AssetGraph Library
+Web Asset Graph
 
 
 ### ?
-wag is a tool that parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.
+wag parses a connected pile of related web files (html, css, javascript) and builds a graph of assets, modeling each file and the dependencies between them.
 
 
 The most obvious usage (to me) is building highly optimized website deploys by traversing the graph and applying operations (minification, renaming based on hashing, app cache generation, etc.) 
@@ -17,8 +17,8 @@ This could become part of a grunt workflow, or you could build your own custom t
 This tool is inspired by assetgraph and assetgraph-builder.
 
 ### Features
-* very fast
-* simple API*
+* fast
+* simple API
 * only 500 lines of code
 * supports basic RequireJS and Browserify syntax
 * provides command line tool and programmatic API
@@ -34,7 +34,7 @@ This tool is inspired by assetgraph and assetgraph-builder.
 #### Command Line Example
 ```sh
 cd projectdir
-wag --inp public/ --out deploy/ --cdnroot mycdn.cloudfront.net --hash --minify'
+wag --inp public/ --out deploy/ --cdnroot mycdn.cloudfront.net --hash --minify
 ```
 
 What this does:
@@ -42,7 +42,7 @@ What this does:
 1. Traverse assets in a `public/` directory, writing them out to `deploy/`.
 2. Minifies each file.
 3. Renames the assets to the md5 of the their contents. (e.g., `/img/dog.png` is re-rewritten to `/static/343e32abce3968feac.png`)
-4. re-writes the URL for the asset to point at a CDN version (e.g., `/static/343e32abce3968feac.png` is re-written to `//mycdn.cloudfront.net/static/343e32abce3968feac.png` )
+4. Re-writes the URL for the asset to point at a CDN version (e.g., `/static/343e32abce3968feac.png` is re-written to `//mycdn.cloudfront.net/static/343e32abce3968feac.png` )
 
 #### Programmatic Example
 
