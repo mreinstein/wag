@@ -18,7 +18,10 @@
     "web",
     "wag"
   ],
-  "author": "Mike Reinstein",
+  "author": {
+    "name": "Mike Reinstein",
+    "email": "reinstein.mike@gmail.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mreinstein/wag/issues"
