@@ -12,4 +12,3 @@ logs
 results
 .DS_Store
 node_modules
-npm-debug.log
