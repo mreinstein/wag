@@ -27,17 +27,16 @@
     "url": "https://github.com/mreinstein/wag/issues"
   },
   "dependencies": {
-    "underscore": "^1.7.0",
-    "css": "^1.6.0",
-    "htmlparser2": "^3.7.3",
-    "uglify-js": "^2.4.15",
     "commander": "^2.2.0",
-    "shelljs": "^0.3.0"
+    "css": "^2.2.1",
+    "htmlparser2": "^3.7.3",
+    "shelljs": "^0.5.3",
+    "uglify-js": "^2.4.15"
   },
   "bin": {
     "wag": "./bin/wag.js"
   },
   "devDependencies": {
-    "coffee-script": "^1.7.0"
+    "coffee-script": "^1.10.0"
   }
 }

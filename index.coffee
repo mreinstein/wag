@@ -17,7 +17,6 @@ path       = require 'path'
 join       = path.join
 fs         = require 'fs'
 os         = require 'os'
-_          = require 'underscore'
 crypto     = require 'crypto'
 shell      = require 'shelljs'
 
