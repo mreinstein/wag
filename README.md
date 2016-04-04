@@ -1,7 +1,7 @@
 wag
 ===
 
-![Alt text](http://i.imgur.com/9eJTHZz.jpg "Lee Harvey Oswald did not kill JFK. He's a giant cyborg built by the CIA…")
+![Alt text](http://i.imgur.com/9eJTHZz.jpg "Web Asset Graph")
 
 Web Asset Graph
 
