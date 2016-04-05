@@ -7,6 +7,7 @@ hash         = require './hash'
 join         = require('path').join
 minifyImage  = require './minify-image'
 minifyScript = require './minify-javascript'
+parsePath    = require('path').parse
 parseCssUrl  = require './parse-css-url'
 extname      = require('path').extname
 
@@ -40,8 +41,8 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           minified = minifyImage(absPath, image)
           hashed = hash(minified)
           
-          ext = extname absPath
-          out = join outputPath, "#{hashed}#{ext}"
+          parsed = parsePath absPath
+          out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
           renamed[absPath] = out
         else if type is 'javascript'
@@ -49,8 +50,8 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           minified = minifyScript(absPath, script)
           hashed = hash(minified)
           
-          ext = extname absPath
-          out = join outputPath, "#{hashed}#{ext}"
+          parsed = parsePath absPath
+          out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
           renamed[absPath] = out
 
@@ -67,8 +68,8 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           minified = minifyImage(absPath, image)
           hashed = hash(minified)
           
-          ext = extname absPath
-          out = join outputPath, "#{hashed}#{ext}"
+          parsed = parsePath absPath
+          out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
           renamed[absPath] = out
 
@@ -83,9 +84,8 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
     text = fs.readFileSync path, 'utf8'
     minified = ren path, text, assetsPath, renamed
     hashed = hash(minified)
-    ext = extname path
-
-    out = join outputPath, "#{hashed}#{ext}"
+    parsed = parsePath path
+    out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
     fs.writeFileSync out, minified, 'utf8'
     renamed[path] = out
 
