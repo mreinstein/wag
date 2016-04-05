@@ -76,8 +76,7 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           renamed[absPath] = out
 
   for path, refs of styleRefs
-    for ref in refs
-      absPath = ref.path
+    for absPath in refs
       if not renamed[absPath]
         #console.log 'handle css ref:', absPath
         type = findType(absPath)

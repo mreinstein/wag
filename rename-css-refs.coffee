@@ -23,7 +23,6 @@ module.exports = renameCssReferences = (filepath, text, assetsPath, renamed, cdn
 
           dec.value = parser.serialize(parsed)
 
-
     else if rule.type is 'rule'
       for dec in rule.declarations
         if dec.type is 'declaration' and (dec.property is 'background-image' or dec.property is 'background')

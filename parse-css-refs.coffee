@@ -23,7 +23,7 @@ parseCSS = (assetsPath, filepath, text) ->
               fullpath = join path.dirname(filepath), next.url
             else
               fullpath = join assetsPath, next.url
-            assets.push { path: fullpath, dec: dec }
+            assets.push fullpath
 
     else if rule.type is 'rule'
       for dec in rule.declarations
@@ -35,7 +35,7 @@ parseCSS = (assetsPath, filepath, text) ->
             else
               fullpath = join assetsPath, url
 
-            assets.push { path: fullpath, dec: dec }
+            assets.push fullpath
   assets
 
 
