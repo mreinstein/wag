@@ -35,7 +35,9 @@ htmlRefs = parseHTML rootPath, html
 styleRefs = parseCSS rootPath, htmlRefs
 
 outputPath = '/tmp/mosaic'
-results = optimize outputPath, htmlRefs, styleRefs
+assetsPath = '/Users/michaelreinstein/wwwroot/nir-project/service-website/public'
+cdnPrefix = '//cdn.saymosaic.com'
+results = optimize outputPath, assetsPath, htmlRefs, styleRefs, cdnPrefix
 
 # TODO: copy files
 #cp -r /tmp/mosaic /Users/michaelreinstein/wwwroot/nir-project/service-website/public/optimized

@@ -16,23 +16,24 @@ ren2 = require './rename-html-refs'
 
 
 # parse asset graph, minifying and renaming based on md5 hash
-# https://github.com/mreinstein/wag/blob/master/index.coffee
 #
-# @param string outputPath  absolute path to the directory minified/renamed assets are written to
+# @param string outputPath  absolute path to the directory minified/renamed
+#                           assets are written to
+# @param string assetsPath  absolute path to location where assets currently
+#                           exist
 # @param object htmlRefs    key is an absolute path to an html file, value is
 #                           an array of absolute filepaths referenced by the
 #                           html file
 # @param object styleRefs   key is an absolute path to a css file, value is an
 #                           array of absolute filepaths referenced by the css
 #                           file
-module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
+# @param string cdnPrefix   a url path to prepend to all assets when re-written
+#                           e.g., '//cdn.somedomain.com' will re-write abc.css
+#                           to '//cdn.somedomain.com/abc-<MD5 file hash>.css'
+module.exports = optimize = (outputPath, assetsPath, htmlRefs, styleRefs, cdnPrefix='') ->
   # maintain a list of assets that are renamed. key is original path, value is
   # renamed path
   renamed = {}
-
-  # TODO: don't hardcode these, pass them in
-  assetsPath = '/Users/michaelreinstein/wwwroot/nir-project/service-website/public'
-  cdnPrefix = '//cdn.saymosaic.com'
 
   # renaming assets based on MD5 hash must be done in order because any assets
   # that depend on that renamed file will mean the reference to that asset has
