@@ -14,7 +14,8 @@ extname      = require('path').extname
 ren  = require './rename-css-refs'
 ren2 = require './rename-html-refs'
 
-# TODO: include original file name in hashed filename
+
+# TODO: properly document these function arguments
 
 # parse asset graph, minifying and renaming based on md5 hash
 # https://github.com/mreinstein/wag/blob/master/index.coffee
@@ -24,6 +25,10 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
   # maintain a list of assets that are renamed. key is original path, value is
   # renamed path
   renamed = {}
+
+  # TODO: don't hardcode these, pass them in
+  assetsPath = '/Users/michaelreinstein/wwwroot/nir-project/service-website/public'
+  cdnPrefix = '//cdn.saymosaic.com'
 
   # renaming assets based on MD5 hash must be done in order because any assets
   # that depend on that renamed file will mean the reference to that asset has
@@ -41,6 +46,7 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           minified = minifyImage(absPath, image)
           hashed = hash(minified)
           
+          # include original file name in hashed filename
           parsed = parsePath absPath
           out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
@@ -50,6 +56,7 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           minified = minifyScript(absPath, script)
           hashed = hash(minified)
           
+          # include original file name in hashed filename
           parsed = parsePath absPath
           out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
@@ -57,6 +64,8 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
         else if type is 'font'
           font = fs.readFileSync absPath, 'utf8'
           hashed = hash(font)
+
+          # include original file name in hashed filename
           parsed = parsePath absPath
           out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, font
@@ -73,6 +82,7 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           minified = minifyImage(absPath, image)
           hashed = hash(minified)
           
+          # include original file name in hashed filename
           parsed = parsePath absPath
           out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
@@ -81,16 +91,14 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
         else if type is 'font'
           font = fs.readFileSync absPath, 'utf8'
           hashed = hash(font)
+
+          # include original file name in hashed filename
           parsed = parsePath absPath
           out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, font
           renamed[absPath] = out
 
-  # now all of the leaf nodes (images, fonts, javascripts) are processed
-
-  assetsPath = '/Users/michaelreinstein/wwwroot/nir-project/service-website/public'
-
-  cdnPrefix = '//cdn.saymosaic.com'
+  # now all of the leaf nodes (images, fonts, javascripts) are processed.
 
   # update all css files to point at leaf node references
   for path, refs of styleRefs

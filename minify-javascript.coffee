@@ -6,6 +6,8 @@ join     = path.join
 shell    = require 'shelljs'
 
 
+# TODO: replace shelljs with native process exec
+
 # write an optimized image to a temp directory. shells out to external image
 # optimization tools that are installed.
 #
