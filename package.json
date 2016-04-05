@@ -2,10 +2,11 @@
   "name": "wag",
   "version": "0.5.4",
   "description": "Parses a connected pile of web assets (html, css, javascript, images) and builds a graph, modeling each file and the dependencies between them.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "preferGlobal": true,
   "scripts": {
-    "build": "coffee -c index.coffee",
+    "build": "coffee -cb lib/",
+    "prepublish": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -40,7 +41,7 @@
     "uglify-js": "^2.4.15"
   },
   "bin": {
-    "wag": "./bin/wag.js"
+    "wag": "./bin/cli.js"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0"
