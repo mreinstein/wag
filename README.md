@@ -13,11 +13,10 @@ wag parses a pile of HTML files, finds all references to assets (css, javascript
 This tool is inspired by assetgraph and assetgraph-builder.
 
 ### features
-* fast
-* simple API, only 500 lines of code
 * renames files based on their MD5 hash so they can be cached forever
-* prefixes assets with an optional CDN host
 * compresses css, javascript, and images (jpg, png, svg)
+* prefixes assets with an optional CDN host
+* simple API, only 500 lines of code
 
 ### usage
 
