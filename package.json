@@ -3,7 +3,6 @@
   "version": "0.5.4",
   "description": "Parses a connected pile of web assets (html, css, javascript, images) and builds a graph, modeling each file and the dependencies between them.",
   "main": "./lib/index.js",
-  "preferGlobal": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

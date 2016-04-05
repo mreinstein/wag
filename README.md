@@ -1,13 +1,10 @@
-wag
+wag (Web Asset Graph)
 ===
 
 ![Alt text](http://i.imgur.com/9eJTHZz.jpg "Web Asset Graph")
 
-Web Asset Graph
 
-
-### ?
-wag parses a pile of HTML files, finds all references to assets (css, javascript, images, fonts) and re-writes the html in-place to point at these optimized assets.
+Parses a pile of HTML files, finds all references to assets (css, javascript, images, fonts) and re-writes the html in-place to point at these optimized assets.
 
 
 This tool is inspired by assetgraph and assetgraph-builder.
