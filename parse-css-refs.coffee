@@ -1,8 +1,12 @@
 css         = require 'css'
 fs          = require 'fs'
 parseCssUrl = require './parse-css-url'
+parser      = require 'css-font-face-src'
 path        = require 'path'
 join        = path.join
+
+
+parseFontFaceUrls = (src) -> parser.parse src
 
 
 parseCSS = (assetsPath, filepath, text) ->
@@ -10,7 +14,18 @@ parseCSS = (assetsPath, filepath, text) ->
 
   c = css.parse text 
   for rule in c.stylesheet.rules
-    if rule.type is 'rule'
+    if rule.type is 'font-face'
+      for dec in rule.declarations
+        if (dec.type is 'declaration') and (dec.property is 'src')
+          parsed = parser.parse dec.value
+          for next in parsed
+            if next.url.startsWith('..')
+              fullpath = join path.dirname(filepath), next.url
+            else
+              fullpath = join assetsPath, next.url
+            assets.push { path: fullpath, dec: dec }
+
+    else if rule.type is 'rule'
       for dec in rule.declarations
         if dec.type is 'declaration' and (dec.property is 'background-image' or dec.property is 'background')
           url = parseCssUrl dec.value

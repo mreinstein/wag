@@ -54,8 +54,13 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
           fs.writeFileSync out, minified
           renamed[absPath] = out
-
-        # TODO: rename all fonts by hash
+        else if type is 'font'
+          font = fs.readFileSync absPath, 'utf8'
+          hashed = hash(font)
+          parsed = parsePath absPath
+          out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
+          fs.writeFileSync out, font
+          renamed[absPath] = out
 
   for path, refs of styleRefs
     for ref in refs
@@ -73,7 +78,13 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
           fs.writeFileSync out, minified
           renamed[absPath] = out
 
-        # TODO: rename all fonts by hash
+        else if type is 'font'
+          font = fs.readFileSync absPath, 'utf8'
+          hashed = hash(font)
+          parsed = parsePath absPath
+          out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
+          fs.writeFileSync out, font
+          renamed[absPath] = out
 
   # now all of the leaf nodes (images, fonts, javascripts) are processed
 
