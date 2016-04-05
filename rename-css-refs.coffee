@@ -5,7 +5,7 @@ join        = path.join
 parseCssUrl = require './parse-css-url'
 
 
-module.exports = renameCssReferences = (filepath, text, assetsPath, renamed) ->
+module.exports = renameCssReferences = (filepath, text, assetsPath, renamed, cdnPrefix='') ->
   c = css.parse text 
   for rule in c.stylesheet.rules
     if rule.type is 'rule'
@@ -20,7 +20,7 @@ module.exports = renameCssReferences = (filepath, text, assetsPath, renamed) ->
 
             #assets.push { path: fullpath, dec: dec }
             url = parseCssUrl dec.value
-            fname = "/optimized/#{basename(renamed[fullpath])}"
+            fname = "#{cdnPrefix}/#{basename(renamed[fullpath])}"
 
             dec.value = dec.value.replace url, fname
 

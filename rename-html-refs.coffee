@@ -5,7 +5,7 @@ join        = path.join
 
 
 # recursively parse a DOM node's structure
-_parseDOMNode = (node, assetsPath, renamed) ->
+_parseDOMNode = (node, assetsPath, renamed, cdnPrefix) ->
   # html relation types:
   #   type: tag    name: link
   #   type: script name: script
@@ -30,7 +30,7 @@ _parseDOMNode = (node, assetsPath, renamed) ->
     else
       newAssetPath = join assetsPath, newAssetPath
       if renamed[newAssetPath]
-        fname = "/optimized/#{basename(renamed[newAssetPath])}"
+        fname = "#{cdnPrefix}/#{basename(renamed[newAssetPath])}"
 
         if node.attribs?.src
           node.attribs.src = fname
@@ -42,10 +42,10 @@ _parseDOMNode = (node, assetsPath, renamed) ->
   # if this DOM node has any children, parse them for asset references
   if node.children
     for n in node.children
-      _parseDOMNode n, assetsPath, renamed
+      _parseDOMNode n, assetsPath, renamed, cdnPrefix
 
 
-module.exports = renameHtmlReferences = (filepath, text, assetsPath, renamed) ->
+module.exports = renameHtmlReferences = (filepath, text, assetsPath, renamed, cdnPrefix='') ->
   d = null
   handler = new htmlparser.DomHandler (er, dom) =>
     if er
@@ -53,7 +53,7 @@ module.exports = renameHtmlReferences = (filepath, text, assetsPath, renamed) ->
     else
       # parsing done, analyze the DOM
       for d in dom
-        _parseDOMNode d, assetsPath, renamed
+        _parseDOMNode d, assetsPath, renamed, cdnPrefix
     d = dom
 
   parser = new htmlparser.Parser handler

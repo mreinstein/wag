@@ -79,10 +79,12 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
 
   assetsPath = '/Users/michaelreinstein/wwwroot/nir-project/service-website/public'
 
+  cdnPrefix = '//cdn.saymosaic.com'
+
   # update all css files to point at leaf node references
   for path, refs of styleRefs
     text = fs.readFileSync path, 'utf8'
-    minified = ren path, text, assetsPath, renamed
+    minified = ren path, text, assetsPath, renamed, cdnPrefix
     hashed = hash(minified)
     parsed = parsePath path
     out = join outputPath, "#{parsed.name}-#{hashed}#{parsed.ext}"
@@ -92,7 +94,7 @@ module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
   # update all html files to point at leaf node and css file references
   for path, refs of htmlRefs
     text = fs.readFileSync path, 'utf8'
-    html = ren2 path, text, assetsPath, renamed
+    html = ren2 path, text, assetsPath, renamed, cdnPrefix
     console.log 'updating', path
     # update the html in-place
     fs.writeFileSync path, html, 'utf8'
