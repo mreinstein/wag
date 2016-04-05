@@ -15,12 +15,16 @@ ren  = require './rename-css-refs'
 ren2 = require './rename-html-refs'
 
 
-# TODO: properly document these function arguments
-
 # parse asset graph, minifying and renaming based on md5 hash
 # https://github.com/mreinstein/wag/blob/master/index.coffee
 #
-# @param string outputPath  absolute path to the directory containing the minified and renamed assets
+# @param string outputPath  absolute path to the directory minified/renamed assets are written to
+# @param object htmlRefs    key is an absolute path to an html file, value is
+#                           an array of absolute filepaths referenced by the
+#                           html file
+# @param object styleRefs   key is an absolute path to a css file, value is an
+#                           array of absolute filepaths referenced by the css
+#                           file
 module.exports = optimize = (outputPath, htmlRefs, styleRefs) ->
   # maintain a list of assets that are renamed. key is original path, value is
   # renamed path
