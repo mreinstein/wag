@@ -5,8 +5,6 @@
   "main": "./lib/index.js",
   "preferGlobal": true,
   "scripts": {
-    "build": "coffee -cb lib/",
-    "prepublish": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -42,8 +40,5 @@
   },
   "bin": {
     "wag": "./bin/cli.js"
-  },
-  "devDependencies": {
-    "coffee-script": "^1.10.0"
   }
 }
