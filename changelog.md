@@ -1,3 +1,10 @@
+# 1.1.1
+
+handle image urls in css @media declarations. 
+
+updated shelljs dependency
+
+
 # 1.0.0
 
 This release is essentially a re-write.
