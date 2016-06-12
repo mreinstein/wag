@@ -1,4 +1,4 @@
-# 1.1.1
+# 1.1.0
 
 handle image urls in css @media declarations. 
 
