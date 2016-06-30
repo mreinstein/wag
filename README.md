@@ -20,17 +20,15 @@ Parses a pile of HTML files, finds all references to assets (css, javascript, im
 
 #### example
 ```sh
-wag --inp /Users/mike/test-website/html \
-    --out /Users/mike/test-website/optimized \
-    --assets /Users/mike/test-website/public \
-    --cdnroot //cdn.test-website.com
+cd /Users/mike/test-website
+wag --inp html --out optimized --assets public --cdnroot //cdn.test-website.com
 ```
 
 What this does:
 
  1. Recursively find all HTML files in `test-website/html/` and subfolders
- 2. creates the `optimized/` directory and empties it
+ 2. creates the `test-website/optimized/` directory and empties it
  3. finds all css, images, javascripts, and font files referenced in the HTML files
- 4. minifies each file, renames them based on each file's md5 hash, and writes them to `optimized/`
-    (e.g., `public/images/dog.png` is re-rewritten to `optimized/dog-343e32abce3968feac.png`)
+ 4. minifies each file, renames them based on each file's md5 hash, and writes them to `test-website/optimized/`
+    (e.g., `test-website/public/images/dog.png` is re-rewritten to `test-website/optimized/dog-343e32abce3968feac.png`)
  5. Re-writes the URL for the asset to point at a CDN version (e.g., `dog-343e32abce3968feac.png` is re-written to `//cdn.test-website.com/dog-343e32abce3968feac.png` )

@@ -34,6 +34,9 @@ wag --inp /Users/michaelreinstein/wwwroot/nir-project/service-website/lib \
 */
 
 program.cdnroot = program.cdnroot || '';
+program.out = path.resolve(program.out);
+program.inp = path.resolve(program.inp);
+program.assets = path.resolve(program.assets);
 wag(program.out, program.cdnroot, program.inp, program.assets);
 
 
