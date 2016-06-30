@@ -1,3 +1,8 @@
+# 1.2.0
+
+added relative path support
+
+
 # 1.1.0
 
 handle image urls in css @media declarations. 
