@@ -4,7 +4,9 @@
   "description": "Parses a connected pile of web assets (html, css, javascript, images) and builds a graph, modeling each file and the dependencies between them.",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -35,9 +37,11 @@
     "pngquant-bin": "^3.1.0",
     "shelljs": "^0.7.0",
     "svgo": "^0.6.3",
-    "uglify-js": "^2.4.15"
+    "uglify-js": "^2.4.15",
+    "snyk": "^1.25.0"
   },
   "bin": {
     "wag": "./bin/cli.js"
-  }
+  },
+  "snyk": true
 }
