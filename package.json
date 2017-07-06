@@ -30,14 +30,17 @@
     "css-font-face-src": "^1.0.0",
     "htmlparser2": "^3.7.3",
     "jpegtran-bin": "^3.0.6",
-    "optipng-bin": "^3.1.0",
+    "optipng-bin": "^4.0.0",
     "pngcrush-bin": "^3.0.0",
     "pngquant-bin": "^3.1.0",
     "shelljs": "^0.7.0",
     "svgo": "^0.7.2",
-    "uglify-js": "^2.4.15"
+    "uglify-js": "^3.0.23"
   },
   "bin": {
     "wag": "./bin/cli.js"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }
